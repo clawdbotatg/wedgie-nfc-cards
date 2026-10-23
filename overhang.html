@@ -50,7 +50,7 @@ svg .m { font: 11px var(--mono); fill: var(--muted); }
 
   <div class="controls">
     <label for="layer">Layer <input id="layer" type="range" min="1" max="4" step="1" value="4"> <span id="ln" class="mono">4 / 4</span></label>
-    <button id="fix" aria-pressed="false">Show fix: split in two</button>
+    <button id="fix" aria-pressed="false">Show fix: flip it</button>
     <button id="ex" aria-pressed="true">Thickness 6×</button>
   </div>
 
@@ -172,14 +172,14 @@ svg .m { font: 11px var(--mono); fill: var(--muted); }
     3: ['Layer 3: the lip starts. Its outer 2.5 mm has nothing under it, so the plastic sags or curls.', 'z 0.4 – 0.6 mm · overhang'],
     4: ['Layer 4: the top of the lip, with the chip pocket. The edge is already bad from layer 3.', 'z 0.6 – 0.8 mm · overhang'],
   };
-  const FIX = ['Fix: print the block and the lip as two flat parts, then glue. Both sit flat on the bed. Nothing hangs.', 'block 0.4 mm + lip plate 0.4 mm'];
+  const FIX = ['Fix: flip it. Lip on the bed, screen block on top. Nothing hangs. The face prints last, so iron it.', 'lip 0 – 0.4 mm · block 0.4 – 0.8 mm · chip pocket moved to the back'];
   function text() {
     const n = +layerIn.value; ln.textContent = n + ' / 4';
     const [a, b] = fixed ? FIX : LINES[n];
     say.innerHTML = ''; say.append(a); const s = document.createElement('span'); s.className = 'mono'; s.textContent = b; say.append(s);
   }
   layerIn.addEventListener('input', text);
-  fixBtn.addEventListener('click', () => { fixed = !fixed; fixBtn.setAttribute('aria-pressed', fixed); fixBtn.textContent = fixed ? 'Show problem' : 'Show fix: split in two'; text(); });
+  fixBtn.addEventListener('click', () => { fixed = !fixed; fixBtn.setAttribute('aria-pressed', fixed); fixBtn.textContent = fixed ? 'Show problem' : 'Show fix: flip it'; text(); });
   exBtn.addEventListener('click', () => { ex = !ex; exBtn.setAttribute('aria-pressed', ex); exBtn.textContent = ex ? 'Thickness 6×' : 'Thickness 1×'; tag.textContent = ex ? 'thickness shown 6× so you can see it' : 'real thickness'; });
   text();
 
@@ -195,9 +195,10 @@ svg .m { font: 11px var(--mono); fill: var(--muted); }
     const k = reduce ? 1 : 0.12;
     fixT += ((fixed ? 1 : 0) - fixT) * k; exT += ((ex ? EXAG : 1) - exT) * k;
     world.scale.z = exT;
-    // problem: lip on the block. fix: block left, lip plate right, both on the bed
-    block.position.x = -26 * fixT;
-    lip.position.set(26 * fixT, 0, LIP * (1 - fixT));
+    // problem: lip on top of the block. fix: flipped, lip on the bed, block on top
+    const lift = Math.sin(Math.PI * fixT) * 8;
+    block.position.z = LIP * fixT + lift;
+    lip.position.z = LIP * (1 - fixT) + lift;
     airBox.visible = under.visible = fixT < 0.5;
     air.opacity = 0.22 * (1 - fixT * 2);
     clip.constant = fixed ? 100 : (+layerIn.value * 0.2 + 0.001) * exT;
