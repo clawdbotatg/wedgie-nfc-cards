@@ -1,12 +1,14 @@
 """The wedgie NFC card: STLs for the three prints.
 
-    uv run --with manifold3d --with numpy --with fonttools python card/make.py
+    uv run --with manifold3d --with numpy --with fonttools python make.py
 
-Every part comes out face down, ready to print. A part with more than one color is one STL
-per color, all in the same place: load them together as one object, one filament each.
+Every part comes out the way it prints, no supports. A part with more than one color is one STL
+per color, all in the same place, plus a 3MF that already holds them as one object with a
+filament per color (3mf/).
 """
 import os
 import struct
+import zipfile
 
 import numpy as np
 from fontTools.pens.basePen import BasePen
@@ -15,17 +17,18 @@ from manifold3d import CrossSection, FillRule, JoinType, Manifold
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 OUT = os.path.join(HERE, "stl")
+OUT3 = os.path.join(HERE, "3mf")
 
 # mm. US business card. 0.2 mm layers.
 W, H, R = 88.9, 50.8, 5.0
-BACK = 0.6                  # black plate
+BACK = 0.8                  # black plate (the chip pocket leaves 0.4 under the chip)
 FRONT = 1.0                 # white plate
 LIP = 0.4                   # the tile's lip, and the recess for it under the front
 SINK = 0.2                  # tile face sits this far under the front face
 INLAY = 0.4                 # color depth in a face (2 layers)
 FIT = 0.15                  # gap on every side that slides into something
 LIP_W = 2.5                 # how far the lip reaches under the front
-CHIP_D, POCKET = 25.6, 0.2  # NTAG215 sticker is 25 mm; its pocket is half in the tile, half in the back
+CHIP_D, POCKET = 25.6, 0.4  # NTAG215 sticker is 25 mm; its pocket is in the back
 
 # the real wedgie lid turned sideways and scaled 1.52x
 SCREEN = dict(x=-0.2, y=-0.4, w=40.2, h=38.3, r=1.6)       # the hole in the front
@@ -67,6 +70,42 @@ def save(m, name):
             f.write(struct.pack("<12fH", *n, *p, *q, *s, 0))
     lo, hi = m.bounding_box()[:3], m.bounding_box()[3:]
     print(f"{name:24s} {len(t):6d} tris  {hi[0]-lo[0]:.1f} x {hi[1]-lo[1]:.1f} x {hi[2]-lo[2]:.2f} mm")
+
+
+def save_3mf(parts, name):
+    """One object, one part per color, each part on its own filament (1, 2, ...), the order given.
+    Bambu Studio's own layout, so the CLI slices it with no GUI."""
+    objs, comps, cfg = [], [], []
+    for i, (color, m) in enumerate(parts, 1):
+        mesh = m.to_mesh()
+        v = np.asarray(mesh.vert_properties)[:, :3]
+        t = np.asarray(mesh.tri_verts)
+        vs = "".join(f'<vertex x="{a:.4f}" y="{b:.4f}" z="{c:.4f}"/>' for a, b, c in v)
+        ts = "".join(f'<triangle v1="{a}" v2="{b}" v3="{c}"/>' for a, b, c in t)
+        objs.append(f'<object id="{i}" type="model"><mesh><vertices>{vs}</vertices><triangles>{ts}</triangles></mesh></object>')
+        comps.append(f'<component objectid="{i}"/>')
+        cfg.append(f'<part id="{i}" subtype="normal_part"><metadata key="name" value="{color}"/><metadata key="extruder" value="{i}"/></part>')
+    top = len(parts) + 1
+    model = ('<?xml version="1.0" encoding="UTF-8"?>\n<model unit="millimeter" xml:lang="en-US" '
+             'xmlns="http://schemas.microsoft.com/3dmanufacturing/core/2015/02" xmlns:BambuStudio="http://schemas.bambulab.com/package/2021">'
+             '<metadata name="Application">BambuStudio-02.07.01.62</metadata><metadata name="BambuStudio:3mfVersion">1</metadata>'
+             f'<resources>{"".join(objs)}<object id="{top}" type="model"><components>{"".join(comps)}</components></object></resources>'
+             f'<build><item objectid="{top}" transform="1 0 0 0 1 0 0 0 1 128 128 0" printable="1"/></build></model>')
+    settings = ('<?xml version="1.0" encoding="UTF-8"?>\n<config>'
+                f'<object id="{top}"><metadata key="name" value="{name}"/><metadata key="extruder" value="1"/>{"".join(cfg)}</object>'
+                '</config>')
+    types = ('<?xml version="1.0" encoding="UTF-8"?>\n<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">'
+             '<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>'
+             '<Default Extension="model" ContentType="application/vnd.ms-package.3dmanufacturing-3dmodel+xml"/></Types>')
+    rels = ('<?xml version="1.0" encoding="UTF-8"?>\n<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'
+            '<Relationship Target="/3D/3dmodel.model" Id="rel0" Type="http://schemas.microsoft.com/3dmanufacturing/2013/01/3dmodel"/></Relationships>')
+    path = os.path.join(OUT3, f"{name}.3mf")
+    with zipfile.ZipFile(path, "w", zipfile.ZIP_DEFLATED) as z:
+        z.writestr("[Content_Types].xml", types)
+        z.writestr("_rels/.rels", rels)
+        z.writestr("3D/3dmodel.model", model)
+        z.writestr("Metadata/model_settings.config", settings)
+    print(f"{name + '.3mf':24s} filaments: " + ", ".join(f"{i}={c}" for i, (c, _) in enumerate(parts, 1)))
 
 
 # ---------- text and logos as 2D shapes
@@ -133,6 +172,7 @@ def eth(h, x=0.0, y=0.0):
 # ---------- the parts
 
 def back():
+    """Prints outside face down; the chip pocket opens up."""
     pocket = slab(circle(CHIP_D, SCREEN["x"], SCREEN["y"]), BACK - POCKET, BACK + 1)
     return {"black": slab(rrect(W, H, R), 0, BACK) - pocket}
 
@@ -161,13 +201,13 @@ def front():
 
 
 def tile(art):
-    """The screen. Lip under the front, block up through the hole, chip pocket underneath."""
+    """The screen. Lip under the front, block up through the hole. Prints lip down, face up
+    (face down, the lip would hang 2.5 mm in the air). Face = the last 2 layers: iron it."""
     tw, th = SCREEN["w"] - 2 * FIT, SCREEN["h"] - 2 * FIT
     top = FRONT - SINK
     body = slab(rrect(tw + 2 * LIP_W, th + 2 * LIP_W, SCREEN["r"] + LIP_W), 0, LIP) + slab(rrect(tw, th, SCREEN["r"] - FIT), LIP, top)
-    body = body - slab(circle(CHIP_D), -1, POCKET)
     color = slab(art, top - INLAY, top)
-    return {"black": face_down(body - color, top), "color": face_down(color, top)}
+    return {"black": body - color, "color": color}
 
 
 TILES = {
@@ -178,12 +218,19 @@ TILES = {
 }
 
 
+TILE_COLOR = {"5": "white", "10": "white", "20": "white", "eth": "blue"}
+
 if __name__ == "__main__":
     os.makedirs(OUT, exist_ok=True)
+    os.makedirs(OUT3, exist_ok=True)
     for c, m in back().items():
         save(m, f"back-{c}.stl")
-    for c, m in front().items():
+    f = front()
+    for c, m in f.items():
         save(m, f"front-{c}.stl")
+    save_3mf([(c, f[c]) for c in ("white", "grey", "green", "red")], "front")
     for name, art in TILES.items():
-        for c, m in tile(art()).items():
+        t = tile(art())
+        for c, m in t.items():
             save(m, f"tile-{name}-{c}.stl")
+        save_3mf([("black", t["black"]), (TILE_COLOR[name], t["color"])], f"tile-{name}")
