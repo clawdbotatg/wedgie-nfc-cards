@@ -1,0 +1,208 @@
+<title>Tile Lip Overhang</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;800;900&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* layout: one 3D stage of the tile on the print bed, controls, a side profile under it. Same look as preview.html */
+:root {
+  --bg: #f3f4f3; --panel: #ffffff; --fg: #1a1b1a; --muted: #6c706c; --line: #dcdedc;
+  --green: #22c452; --grey: #a9aaab; --red: #e3312c; --stage: #e7e9e7; --ink: #1a1b1a;
+  --display: "Nunito", ui-rounded, system-ui, sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #131413; --panel: #1c1d1c; --fg: #eceeec; --muted: #9a9e9a; --line: #2e302e; --stage: #202220; --ink: #3a3c3a; color-scheme: dark } }
+:root[data-theme="dark"] { --bg: #131413; --panel: #1c1d1c; --fg: #eceeec; --muted: #9a9e9a; --line: #2e302e; --stage: #202220; --ink: #3a3c3a; color-scheme: dark }
+body { background: var(--bg); color: var(--fg); font-family: var(--display); }
+.wrap { max-width: 1000px; margin: 0 auto; padding-block: 24px 48px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  display: grid; gap: 16px; }
+h1 { font-size: 2rem; font-weight: 900; margin: 0; text-wrap: balance; }
+.sub { color: var(--muted); font-size: 1.05rem; margin: 2px 0 0; max-width: 62ch; line-height: 1.4; }
+#stage { position: relative; width: 100%; aspect-ratio: 16 / 10; max-height: 64vh; background: var(--stage);
+  border-radius: 14px; overflow: hidden; touch-action: none; }
+#stage canvas { display: block; width: 100%; height: 100%; }
+.tag { position: absolute; left: 12px; top: 10px; font: 12px var(--mono); color: var(--muted); pointer-events: none; }
+.hint { position: absolute; left: 12px; bottom: 10px; font: 12px var(--mono); color: var(--muted); pointer-events: none; }
+.controls { display: flex; flex-wrap: wrap; gap: 10px 14px; align-items: center; }
+.controls label { font-weight: 800; display: flex; align-items: center; gap: 10px; flex: 1 1 260px; }
+input[type=range] { flex: 1; accent-color: var(--red); }
+button { font: 800 0.95rem var(--display); padding: 9px 16px; border-radius: 999px; border: 1.5px solid var(--line);
+  background: var(--panel); color: var(--fg); cursor: pointer; }
+button[aria-pressed="true"] { border-color: var(--green); box-shadow: inset 0 0 0 1.5px var(--green); }
+button:focus-visible, input:focus-visible { outline: 2px solid var(--green); outline-offset: 2px; }
+.say { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 14px 18px;
+  font-size: 1.1rem; font-weight: 800; line-height: 1.4; min-height: 3.2em; }
+.say .mono { font: 600 0.85rem var(--mono); color: var(--muted); display: block; margin-top: 2px; }
+.box { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 16px 18px; min-width: 0; }
+.box h2 { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin: 0 0 10px; }
+.svgwrap { overflow-x: auto; }
+svg text { font: 700 13px var(--display); fill: var(--fg); }
+svg .m { font: 11px var(--mono); fill: var(--muted); }
+</style>
+
+<div class="wrap">
+  <div>
+    <h1>The tile's lip prints over air</h1>
+    <p class="sub">The tile prints face down. The screen block sits on the bed. The lip on top of it sticks out 2.5 mm on every side with nothing under it. Red = the part that hangs in the air.</p>
+  </div>
+
+  <div id="stage"><span class="tag" id="tag">thickness shown 6× so you can see it</span><span class="hint">drag to turn · pinch / scroll to zoom</span></div>
+
+  <div class="controls">
+    <label for="layer">Layer <input id="layer" type="range" min="1" max="4" step="1" value="4"> <span id="ln" class="mono">4 / 4</span></label>
+    <button id="fix" aria-pressed="false">Show fix: split in two</button>
+    <button id="ex" aria-pressed="true">Thickness 6×</button>
+  </div>
+
+  <div class="say" id="say"></div>
+
+  <div class="box">
+    <h2>Side cut, as printed (thickness 6×)</h2>
+    <div class="svgwrap">
+      <svg viewBox="0 0 640 170" width="100%" style="min-width:480px" role="img" aria-label="Side cut of the tile on the bed: the block sits on the bed, the lip hangs 2.5 mm out on each side with air under it.">
+        <!-- 1 mm = 12 px across, 1 mm = 72 px up (6x) -->
+        <rect x="20" y="130" width="600" height="14" fill="var(--grey)"/>
+        <text x="28" y="160" class="m">print bed</text>
+        <!-- block: 0..0.4 mm, 39.9 mm wide -->
+        <rect x="80.6" y="101.2" width="478.8" height="28.8" fill="var(--ink)" stroke="var(--fg)" stroke-width="1"/>
+        <!-- lip: 0.4..0.8 mm, 44.9 mm wide, pocket on top -->
+        <path d="M50.6 101.2 H589.4 V72.4 H473.6 V86.8 H166.4 V72.4 H50.6 Z" fill="var(--ink)" stroke="var(--fg)" stroke-width="1"/>
+        <!-- air under the lip -->
+        <rect x="50.6" y="101.2" width="30" height="28.8" fill="var(--red)" opacity="0.28"/>
+        <rect x="559.4" y="101.2" width="30" height="28.8" fill="var(--red)" opacity="0.28"/>
+        <line x1="50.6" y1="101.2" x2="80.6" y2="101.2" stroke="var(--red)" stroke-width="4"/>
+        <line x1="559.4" y1="101.2" x2="589.4" y2="101.2" stroke="var(--red)" stroke-width="4"/>
+        <text x="50" y="60" fill="var(--red)" style="fill:var(--red)">air</text>
+        <text x="560" y="60" style="fill:var(--red)">air</text>
+        <text x="320" y="120" text-anchor="middle" style="fill:#eceeec">block on the bed</text>
+        <text x="320" y="64" text-anchor="middle">chip pocket</text>
+        <text x="66" y="40" text-anchor="middle" class="m">2.5 mm</text>
+        <text x="574" y="40" text-anchor="middle" class="m">2.5 mm</text>
+      </svg>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script>
+(function () {
+  // mm, same numbers as make.py
+  const SCREEN = { w: 40.2, h: 38.3, r: 1.6 }, FIT = 0.15, LIP_W = 2.5, LIP = 0.4, TOP = 0.8, POCKET = 0.2, CHIP_D = 25.6;
+  const TW = SCREEN.w - 2 * FIT, TH = SCREEN.h - 2 * FIT, BR = SCREEN.r - FIT, LW = TW + 2 * LIP_W, LH = TH + 2 * LIP_W, LR = SCREEN.r + LIP_W;
+  const EXAG = 6;
+
+  const stage = document.getElementById('stage');
+  const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+  renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 2));
+  renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  renderer.localClippingEnabled = true; renderer.outputEncoding = THREE.sRGBEncoding;
+  stage.prepend(renderer.domElement);
+
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(32, 1.6, 1, 1000);
+  const controls = new THREE.OrbitControls(camera, renderer.domElement);
+  controls.enableDamping = true; controls.minDistance = 30; controls.maxDistance = 300;
+  controls.maxPolarAngle = Math.PI / 2 - 0.03;
+
+  scene.add(new THREE.HemisphereLight(0xffffff, 0x8a8f8a, 0.8));
+  const sun = new THREE.DirectionalLight(0xffffff, 0.7);
+  sun.position.set(-60, 140, 80); sun.castShadow = true; sun.shadow.mapSize.set(2048, 2048);
+  Object.assign(sun.shadow.camera, { left: -80, right: 80, top: 80, bottom: -80, near: 10, far: 400 });
+  sun.shadow.bias = -0.0004; scene.add(sun);
+  const fill = new THREE.DirectionalLight(0xffffff, 0.35); fill.position.set(60, 10, 80); scene.add(fill);
+
+  const lin = c => new THREE.Color(c).convertSRGBToLinear();
+  const clip = new THREE.Plane(new THREE.Vector3(0, -1, 0), 100);
+  function mat(color, extra) {
+    const m = new THREE.MeshStandardMaterial(Object.assign({ color: lin(color), roughness: 0.6, side: THREE.DoubleSide }, extra || {}));
+    m.clippingPlanes = [clip]; m.clipShadows = true; return m;
+  }
+  function rrect(w, h, r, path) {
+    const p = path || new THREE.Shape(), x = -w / 2, y = -h / 2;
+    p.moveTo(x + r, y); p.lineTo(x + w - r, y); p.absarc(x + w - r, y + r, r, -Math.PI / 2, 0, false);
+    p.lineTo(x + w, y + h - r); p.absarc(x + w - r, y + h - r, r, 0, Math.PI / 2, false);
+    p.lineTo(x + r, y + h); p.absarc(x + r, y + h - r, r, Math.PI / 2, Math.PI, false);
+    p.lineTo(x, y + r); p.absarc(x + r, y + r, r, Math.PI, Math.PI * 1.5, false);
+    return p;
+  }
+  function holeRect(w, h, r) {
+    const p = new THREE.Path(), x = -w / 2, y = -h / 2;
+    p.moveTo(x + r, y); p.absarc(x + r, y + r, r, Math.PI * 1.5, Math.PI, true);
+    p.lineTo(x, y + h - r); p.absarc(x + r, y + h - r, r, Math.PI, Math.PI / 2, true);
+    p.lineTo(x + w - r, y + h); p.absarc(x + w - r, y + h - r, r, Math.PI / 2, 0, true);
+    p.lineTo(x + w, y + r); p.absarc(x + w - r, y + r, r, 0, -Math.PI / 2, true);
+    p.lineTo(x + r, y); return p;
+  }
+  const ext = (shape, depth) => new THREE.ExtrudeGeometry(shape, { depth, bevelEnabled: false, curveSegments: 40 });
+  function mesh(geo, m, z, parent) { const o = new THREE.Mesh(geo, m); o.position.z = z; o.castShadow = o.receiveShadow = true; parent.add(o); return o; }
+
+  // world: y up. Each part is a group in "print coords" (z up from the bed), squashed/stretched by `world.scale.z`
+  const world = new THREE.Group(); world.rotation.x = -Math.PI / 2; scene.add(world);
+
+  // print bed
+  const bed = new THREE.Mesh(new THREE.BoxGeometry(150, 110, 1), new THREE.MeshStandardMaterial({ color: lin('#55595a'), roughness: 0.85 }));
+  bed.position.z = -0.5; bed.receiveShadow = true; world.add(bed);
+
+  const black = mat('#1a1b1a', { roughness: 0.5 }), red = mat('#e3312c', { roughness: 0.5, emissive: lin('#e3312c'), emissiveIntensity: 0.25 });
+  const air = mat('#e3312c', { transparent: true, opacity: 0.22, depthWrite: false });
+
+  // block: the screen, face down on the bed (0 .. 0.4)
+  const block = new THREE.Group(); world.add(block);
+  mesh(ext(rrect(TW, TH, BR), LIP), black, 0, block);
+
+  // lip: 0.4 .. 0.8, chip pocket in its top 0.2
+  const lip = new THREE.Group(); world.add(lip);
+  mesh(ext(rrect(LW, LH, LR), LIP - POCKET), black, 0, lip);
+  const lipTop = rrect(LW, LH, LR); const pk = new THREE.Path(); pk.absarc(0, 0, CHIP_D / 2, 0, Math.PI * 2, true); lipTop.holes.push(pk);
+  mesh(ext(lipTop, POCKET), black, LIP - POCKET, lip);
+  // the bit with air under it: its underside in red, and the air itself
+  const ring = rrect(LW, LH, LR); ring.holes.push(holeRect(TW + 0.02, TH + 0.02, BR));
+  const under = mesh(new THREE.ShapeGeometry(ring, 40), red, -0.01, lip); under.castShadow = false;
+  const airBox = new THREE.Group(); world.add(airBox);
+  const airM = mesh(ext(ring, LIP - 0.02), air, 0.01, airBox); airM.castShadow = airM.receiveShadow = false;
+
+  // --- controls
+  const say = document.getElementById('say'), layerIn = document.getElementById('layer'), ln = document.getElementById('ln');
+  const fixBtn = document.getElementById('fix'), exBtn = document.getElementById('ex'), tag = document.getElementById('tag');
+  let fixed = false, ex = true, fixT = 0, exT = EXAG;
+  const LINES = {
+    1: ['Layer 1: the screen block goes down on the bed.', 'z 0.0 – 0.2 mm · fine'],
+    2: ['Layer 2: still the block. Still fine.', 'z 0.2 – 0.4 mm · fine'],
+    3: ['Layer 3: the lip starts. Its outer 2.5 mm has nothing under it, so the plastic sags or curls.', 'z 0.4 – 0.6 mm · overhang'],
+    4: ['Layer 4: the top of the lip, with the chip pocket. The edge is already bad from layer 3.', 'z 0.6 – 0.8 mm · overhang'],
+  };
+  const FIX = ['Fix: print the block and the lip as two flat parts, then glue. Both sit flat on the bed. Nothing hangs.', 'block 0.4 mm + lip plate 0.4 mm'];
+  function text() {
+    const n = +layerIn.value; ln.textContent = n + ' / 4';
+    const [a, b] = fixed ? FIX : LINES[n];
+    say.innerHTML = ''; say.append(a); const s = document.createElement('span'); s.className = 'mono'; s.textContent = b; say.append(s);
+  }
+  layerIn.addEventListener('input', text);
+  fixBtn.addEventListener('click', () => { fixed = !fixed; fixBtn.setAttribute('aria-pressed', fixed); fixBtn.textContent = fixed ? 'Show problem' : 'Show fix: split in two'; text(); });
+  exBtn.addEventListener('click', () => { ex = !ex; exBtn.setAttribute('aria-pressed', ex); exBtn.textContent = ex ? 'Thickness 6×' : 'Thickness 1×'; tag.textContent = ex ? 'thickness shown 6× so you can see it' : 'real thickness'; });
+  text();
+
+  camera.position.set(48, 22, 78); controls.target.set(0, 2, 0); controls.update();
+  function size() {
+    const w = stage.clientWidth, h = stage.clientHeight;
+    renderer.setSize(w, h, false); camera.aspect = w / h; camera.fov = w < 500 ? 48 : 32; camera.updateProjectionMatrix();
+  }
+  new ResizeObserver(size).observe(stage); size();
+
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  (function tick() {
+    const k = reduce ? 1 : 0.12;
+    fixT += ((fixed ? 1 : 0) - fixT) * k; exT += ((ex ? EXAG : 1) - exT) * k;
+    world.scale.z = exT;
+    // problem: lip on the block. fix: block left, lip plate right, both on the bed
+    block.position.x = -26 * fixT;
+    lip.position.set(26 * fixT, 0, LIP * (1 - fixT));
+    airBox.visible = under.visible = fixT < 0.5;
+    air.opacity = 0.22 * (1 - fixT * 2);
+    clip.constant = fixed ? 100 : (+layerIn.value * 0.2 + 0.001) * exT;
+    controls.update(); renderer.render(scene, camera);
+    requestAnimationFrame(tick);
+  })();
+})();
+</script>
