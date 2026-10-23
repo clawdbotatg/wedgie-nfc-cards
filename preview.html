@@ -1,0 +1,291 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>wedgie NFC card</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;800;900&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* layout: one big 3D stage, controls under it, then parts + open questions in two columns */
+:root {
+  --bg: #f3f4f3; --panel: #ffffff; --fg: #1a1b1a; --muted: #6c706c; --line: #dcdedc;
+  --green: #22c452; --grey: #a9aaab; --red: #e3312c;
+  --stage: #e7e9e7;
+  --display: "Nunito", ui-rounded, system-ui, sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #131413; --panel: #1c1d1c; --fg: #eceeec; --muted: #9a9e9a; --line: #2e302e; --stage: #202220; color-scheme: dark } }
+:root[data-theme="dark"] { --bg: #131413; --panel: #1c1d1c; --fg: #eceeec; --muted: #9a9e9a; --line: #2e302e; --stage: #202220; color-scheme: dark }
+body { background: var(--bg); color: var(--fg); font-family: var(--display); }
+.wrap { max-width: 1100px; margin: 0 auto; padding-block: 24px 48px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  display: grid; gap: 18px; }
+.band { height: 6px; display: grid; gap: 3px; grid-template-rows: 1fr 1fr 1fr; height: 15px; }
+.band i { display: block; } .band i:nth-child(1){background:var(--green)} .band i:nth-child(2){background:var(--grey)} .band i:nth-child(3){background:var(--red)}
+h1 { font-size: 2.2rem; font-weight: 900; margin: 0; letter-spacing: -0.01em; text-wrap: balance; }
+.sub { color: var(--muted); font-size: 1.05rem; margin: 2px 0 0; }
+#stage { position: relative; width: 100%; aspect-ratio: 16 / 10; max-height: 68vh; background: var(--stage);
+  border-radius: 14px; overflow: hidden; touch-action: none; }
+#stage canvas { display: block; width: 100%; height: 100%; }
+.hint { position: absolute; left: 12px; bottom: 10px; font: 12px var(--mono); color: var(--muted); pointer-events: none; }
+.controls { display: flex; flex-wrap: wrap; gap: 10px 14px; align-items: center; }
+.controls label { font-weight: 800; display: flex; align-items: center; gap: 10px; flex: 1 1 260px; }
+input[type=range] { flex: 1; accent-color: var(--green); }
+button { font: 800 0.95rem var(--display); padding: 9px 16px; border-radius: 999px; border: 1.5px solid var(--line);
+  background: var(--panel); color: var(--fg); cursor: pointer; }
+button[aria-pressed="true"] { border-color: var(--green); color: var(--fg); box-shadow: inset 0 0 0 1.5px var(--green); }
+button:focus-visible, input:focus-visible { outline: 2px solid var(--green); outline-offset: 2px; }
+.cols { display: grid; grid-template-columns: 1.3fr 1fr; gap: 18px; }
+@media (max-width: 760px) { .cols { grid-template-columns: 1fr; } h1 { font-size: 1.7rem; } }
+.box { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 16px 18px; min-width: 0; }
+.box h2 { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin: 0 0 10px; }
+.parts { display: grid; gap: 12px; }
+.part { display: grid; grid-template-columns: 22px 1fr; gap: 10px; align-items: start; }
+.sw { width: 22px; height: 22px; border-radius: 5px; border: 1px solid var(--line); }
+.part b { font-size: 1.05rem; } .part p { margin: 2px 0 0; color: var(--muted); font-size: 0.92rem; line-height: 1.4; }
+.mono { font-family: var(--mono); font-size: 0.85rem; font-variant-numeric: tabular-nums; color: var(--fg); }
+ol { margin: 0; padding-left: 1.2em; display: grid; gap: 8px; line-height: 1.45; }
+ol li::marker { font-weight: 900; color: var(--muted); }
+</style>
+
+<div class="wrap">
+  <div class="band" aria-hidden="true"><i></i><i></i><i></i></div>
+  <div>
+    <h1>wedgie NFC card</h1>
+    <p class="sub">Three prints: black back, a screen tile over the chip, white front.</p>
+  </div>
+
+  <div id="stage"><span class="hint">drag to turn · pinch / scroll to zoom</span></div>
+
+  <div class="controls">
+    <label for="ex">Explode <input id="ex" type="range" min="0" max="1" step="0.01" value="0"></label>
+    <button id="flip" aria-pressed="false">Show back</button>
+    <button id="cut" aria-pressed="false">Cut in half</button>
+    <button id="top">Top view</button>
+    <button id="reset">Reset view</button>
+  </div>
+
+  <div class="cols">
+    <div class="box">
+      <h2>Parts</h2>
+      <div class="parts">
+        <div class="part"><span class="sw" style="background:#fefefe"></span><div><b>Front</b>
+          <p>White, buttons and stick in color. Recess underneath holds the tile's lip.<br><span class="mono">1.0 mm · ~6 switches per plate</span></p></div></div>
+        <div class="part"><span class="sw" style="background:#1a1b1a"></span><div><b>Tile</b>
+          <p>The screen. Black with "$5" on it. Lip goes under the front. Chip pocket underneath. One per amount.<br><span class="mono">0.8 mm · 2 switches per plate</span></p></div></div>
+        <div class="part"><span class="sw" style="background:#d9b26a"></span><div><b>NFC sticker</b>
+          <p>Sticks into the tile's pocket.<br><span class="mono">Ø25 mm</span></p></div></div>
+        <div class="part"><span class="sw" style="background:#1a1b1a"></span><div><b>Back</b>
+          <p>Plain black.<br><span class="mono">0.6 mm · 0 switches</span></p></div></div>
+      </div>
+    </div>
+    <div class="box">
+      <h2>Colors</h2>
+      <div class="parts">
+        <div class="part"><span class="sw" style="background:#fefefe"></span><div><b>White</b><p>front, "$5"</p></div></div>
+        <div class="part"><span class="sw" style="background:var(--grey)"></span><div><b>Grey</b><p>stick, 2 buttons</p></div></div>
+        <div class="part"><span class="sw" style="background:var(--green)"></span><div><b>Green</b><p>top button</p></div></div>
+        <div class="part"><span class="sw" style="background:var(--red)"></span><div><b>Red</b><p>bottom button</p></div></div>
+        <div class="part"><span class="sw" style="background:#1a1b1a"></span><div><b>Black</b><p>back, tile</p></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script>
+(function () {
+  const C = { white: 0xfefefe, green: '#22c452', grey: '#a9aaab', red: '#e3312c' };
+  // mm. US business card.
+  const W = 88.9, H = 50.8, R = 5.0, FLOOR = 0.8, TOTAL = 2.0, RIM = 1.2, GAP = 0.15;
+  const LW = W - 2 * (RIM + GAP), LH = H - 2 * (RIM + GAP), LR = R - RIM - GAP;
+  const LID = 1.2, POCKET = 0.4, CHIP_D = 25, CHIP_T = 0.2, POCKET_D = 25.6, RECESS = 0.3;
+  // the real wedgie lid (clawd-pico-case v1.7) turned sideways and scaled 1.52x
+  const K = 1.52;
+  const STICK = { x: -30.6, y: 0, ring: 15.2, cap: 10.6, h: 1.4 };
+  const SCREEN = { x: -0.2, y: -0.4, w: 40.2, h: 38.3, r: 1.6 };
+  const BTN = { x: 33.4, w: 8.6, h: 6.6, r: 1.9, top: 1.1, rows: [[13.0, C.green], [4.36, C.grey], [-4.13, C.grey], [-12.8, C.red]] };
+  const CHIP = { x: SCREEN.x, y: SCREEN.y };
+
+  const stage = document.getElementById('stage');
+  const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+  renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 2));
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  renderer.localClippingEnabled = true;
+  renderer.outputEncoding = THREE.sRGBEncoding;
+  stage.prepend(renderer.domElement);
+
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(32, 1.6, 1, 1000);
+  const controls = new THREE.OrbitControls(camera, renderer.domElement);
+  controls.enableDamping = true; controls.minDistance = 40; controls.maxDistance = 400;
+
+  scene.add(new THREE.HemisphereLight(0xffffff, 0x8a8f8a, 0.75));
+  const sun = new THREE.DirectionalLight(0xffffff, 0.75);
+  sun.position.set(-60, 140, 80); sun.castShadow = true;
+  sun.shadow.mapSize.set(2048, 2048);
+  Object.assign(sun.shadow.camera, { left: -80, right: 80, top: 80, bottom: -80, near: 10, far: 400 });
+  sun.shadow.bias = -0.0004;
+  scene.add(sun);
+  const fill = new THREE.DirectionalLight(0xffffff, 0.25); fill.position.set(80, 40, -60); scene.add(fill);
+
+  const ground = new THREE.Mesh(new THREE.PlaneGeometry(600, 600), new THREE.ShadowMaterial({ opacity: 0.12 }));
+  ground.rotation.x = -Math.PI / 2; ground.position.y = -0.05; ground.receiveShadow = true; scene.add(ground);
+
+  const card = new THREE.Group(); card.rotation.x = -Math.PI / 2; scene.add(card);
+
+  const clip = new THREE.Plane(new THREE.Vector3(0, 0, 0), 0);
+  const clips = [];
+  function mat(color, extra) {
+    const m = new THREE.MeshStandardMaterial(Object.assign({ color, roughness: 0.62, metalness: 0, side: THREE.DoubleSide }, extra || {}));
+    m.clippingPlanes = clips; m.clipShadows = true; return m;
+  }
+  function rrect(w, h, r, cx, cy, path) {
+    const p = path || new THREE.Shape(); const x = (cx || 0) - w / 2, y = (cy || 0) - h / 2;
+    p.moveTo(x + r, y); p.lineTo(x + w - r, y); p.absarc(x + w - r, y + r, r, -Math.PI / 2, 0, false);
+    p.lineTo(x + w, y + h - r); p.absarc(x + w - r, y + h - r, r, 0, Math.PI / 2, false);
+    p.lineTo(x + r, y + h); p.absarc(x + r, y + h - r, r, Math.PI / 2, Math.PI, false);
+    p.lineTo(x, y + r); p.absarc(x + r, y + r, r, Math.PI, Math.PI * 1.5, false);
+    return p;
+  }
+  function holeRect(w, h, r) {
+    const p = new THREE.Path(), x = -w / 2, y = -h / 2;
+    p.moveTo(x + r, y); p.absarc(x + r, y + r, r, Math.PI * 1.5, Math.PI, true);
+    p.lineTo(x, y + h - r); p.absarc(x + r, y + h - r, r, Math.PI, Math.PI / 2, true);
+    p.lineTo(x + w - r, y + h); p.absarc(x + w - r, y + h - r, r, Math.PI / 2, 0, true);
+    p.lineTo(x + w, y + r); p.absarc(x + w - r, y + r, r, 0, -Math.PI / 2, true);
+    p.lineTo(x + r, y); return p;
+  }
+  const ext = (shape, depth) => new THREE.ExtrudeGeometry(shape, { depth, bevelEnabled: false, curveSegments: 40 });
+  function mesh(geo, m, z, parent) { const o = new THREE.Mesh(geo, m); o.position.z = z; o.castShadow = o.receiveShadow = true; parent.add(o); return o; }
+
+  // --- back: black, chip sealed inside (pause at 0.6 mm), screen block pokes up through the front
+  // three prints, all face down. Layers 0.2 mm.
+  const BACK = 0.6, FLANGE = 0.4, FRONT = 1.0, SINK = 0.2, FIT = 0.15, LIP = 2.5;
+  const lin = c => new THREE.Color(c).convertSRGBToLinear();
+  const blackMat = mat(lin('#1a1b1a'), { roughness: 0.5 });
+  const at = (o, x, y) => { o.position.x = x; o.position.y = y; return o; };
+
+  // --- back: plain black plate
+  const back = new THREE.Group(); card.add(back);
+  mesh(ext(rrect(W, H, R), BACK), blackMat, 0, back);
+
+  // --- chip: sits on the back, inside the tile's pocket
+  const chip = new THREE.Group(); card.add(chip);
+  const chipTex = new THREE.CanvasTexture(drawChip()); chipTex.encoding = THREE.sRGBEncoding; chipTex.anisotropy = 8;
+  const chipGeo = new THREE.CylinderGeometry(CHIP_D / 2, CHIP_D / 2, CHIP_T, 72);
+  chipGeo.rotateX(Math.PI / 2);
+  const chipMesh = new THREE.Mesh(chipGeo, [mat(0xd9c49a), mat(0xffffff, { map: chipTex, roughness: 0.4, metalness: 0.15 }), mat(0xf2efe6)]);
+  chipMesh.castShadow = true; chipMesh.position.set(CHIP.x, CHIP.y, CHIP_T / 2); chip.add(chipMesh);
+
+  // --- tile: the screen. A lip under the front, a block up through the hole, "$5" on its face
+  const tile = new THREE.Group(); card.add(tile);
+  const TW = SCREEN.w - 2 * FIT, TH = SCREEN.h - 2 * FIT;
+  const lip = rrect(TW + 2 * LIP, TH + 2 * LIP, SCREEN.r + LIP);
+  const pk = new THREE.Path(); pk.absarc(0, 0, POCKET_D / 2, 0, Math.PI * 2, true); lip.holes.push(pk);
+  mesh(ext(lip, 0.2), blackMat, 0, tile);                                              // pocket layer
+  mesh(ext(rrect(TW + 2 * LIP, TH + 2 * LIP, SCREEN.r + LIP), FLANGE - 0.2), blackMat, 0.2, tile);
+  const TOP = FRONT - SINK;                                                            // tile face, 0.2 under the front
+  mesh(ext(rrect(TW, TH, SCREEN.r - FIT), TOP - FLANGE), blackMat, FLANGE, tile);
+  const tileTex = new THREE.CanvasTexture(drawTile('$5')); tileTex.encoding = THREE.sRGBEncoding; tileTex.anisotropy = 8;
+  const tileGeo = new THREE.ShapeGeometry(rrect(TW, TH, SCREEN.r - FIT), 24);
+  { const uv = tileGeo.attributes.uv, pos = tileGeo.attributes.position;
+    for (let i = 0; i < uv.count; i++) uv.setXY(i, (pos.getX(i) + TW / 2) / TW, (pos.getY(i) + TH / 2) / TH); }
+  mesh(tileGeo, mat(0xffffff, { map: tileTex, side: THREE.FrontSide }), TOP + 0.01, tile).castShadow = false;
+  document.fonts && document.fonts.load('900 40px Nunito').then(() => { drawTile('$5', tileTex.image); tileTex.needsUpdate = true; }).catch(() => {});
+  at(tile, SCREEN.x, SCREEN.y);
+
+  // --- front: white, screen hole, a recess underneath for the tile's lip
+  const lid = new THREE.Group(); card.add(lid);
+  const lidMat = mat(C.white);
+  const under = rrect(W, H, R); under.holes.push(holeAt(TW + 2 * LIP + 2 * FIT, TH + 2 * LIP + 2 * FIT, SCREEN.r + LIP + FIT, SCREEN.x, SCREEN.y));
+  mesh(ext(under, FLANGE), lidMat, 0, lid);
+  const over = rrect(W, H, R); over.holes.push(holeAt(SCREEN.w, SCREEN.h, SCREEN.r, SCREEN.x, SCREEN.y));
+  mesh(ext(over, FRONT - FLANGE), lidMat, FLANGE, lid);
+  // buttons + stick: flat color in the face (first 2 layers when printed face down)
+  const flat = (shape, c, x, y) => at(mesh(new THREE.ShapeGeometry(shape, 32), mat(lin(c), { roughness: 0.45, side: THREE.FrontSide }), FRONT + 0.012, lid), x, y);
+  BTN.rows.forEach(([y, c]) => flat(rrect(BTN.w, BTN.h, BTN.r), c, BTN.x, y));
+  const ringS = new THREE.Shape(); ringS.absarc(0, 0, STICK.ring / 2, 0, Math.PI * 2, false);
+  const ringH = new THREE.Path(); ringH.absarc(0, 0, STICK.ring / 2 - 1.0, 0, Math.PI * 2, true); ringS.holes.push(ringH);
+  flat(ringS, C.grey, STICK.x, STICK.y);
+  const capS = new THREE.Shape(); capS.absarc(0, 0, STICK.cap / 2, 0, Math.PI * 2, false);
+  flat(capS, C.grey, STICK.x, STICK.y);
+
+  function clean(shape) { // no repeated points, or the bevel spikes
+    const pts = [];
+    shape.getPoints(12).forEach(v => { const l = pts[pts.length - 1]; if (!l || l.distanceTo(v) > 1e-4) pts.push(v); });
+    if (pts.length > 1 && pts[0].distanceTo(pts[pts.length - 1]) < 1e-4) pts.pop();
+    return new THREE.Shape(pts);
+  }
+  function holeAt(w, h, r, cx, cy) { const p = holeRect(w, h, r); p.getPoints().length; return shiftPath(p, cx, cy); }
+  function shiftPath(p, dx, dy) { const q = new THREE.Path(); p.getPoints(24).forEach((v, i) => i ? q.lineTo(v.x + dx, v.y + dy) : q.moveTo(v.x + dx, v.y + dy)); return q; }
+
+  // the tile's face: black, the amount in white
+  function drawTile(txt, cv) {
+    const S = 24; cv = cv || document.createElement('canvas');
+    cv.width = Math.round(TW * S); cv.height = Math.round(TH * S);
+    const g = cv.getContext('2d');
+    g.fillStyle = '#1a1b1a'; g.fillRect(0, 0, cv.width, cv.height);
+    g.fillStyle = '#fefefe'; g.textAlign = 'center'; g.textBaseline = 'middle';
+    g.font = `900 ${20 * S}px Nunito, ui-rounded, system-ui, sans-serif`;
+    g.fillText(txt, cv.width / 2, cv.height / 2 + 1 * S);
+    return cv;
+  }
+  function drawChip() {
+    const S = 20, n = CHIP_D * S, cv = document.createElement('canvas'); cv.width = cv.height = n;
+    const g = cv.getContext('2d'), c = n / 2;
+    g.fillStyle = '#efe9da'; g.beginPath(); g.arc(c, c, c, 0, Math.PI * 2); g.fill();
+    g.strokeStyle = '#b8863b'; g.lineWidth = 0.45 * S;
+    for (let r = 11.6; r > 8.2; r -= 0.75) { g.beginPath(); g.arc(c, c, r * S, 0, Math.PI * 2); g.stroke(); }
+    g.fillStyle = '#3a3a38'; g.fillRect(c + 9.4 * S, c - 1.3 * S, 2.6 * S, 2.6 * S);
+    return cv;
+  }
+
+  // --- explode / flip / cut
+  const ex = document.getElementById('ex');
+  let target = +ex.value, e = target, flipT = 0, flipped = false;
+  function place() {
+    chip.position.z = BACK + 12 * e;
+    tile.position.z = BACK + 26 * e;
+    lid.position.z = BACK + 44 * e;
+  }
+  ex.addEventListener('input', () => { target = +ex.value; });
+  const flipBtn = document.getElementById('flip');
+  flipBtn.addEventListener('click', () => { flipped = !flipped; flipBtn.setAttribute('aria-pressed', flipped); flipBtn.textContent = flipped ? 'Show front' : 'Show back'; });
+  const cutBtn = document.getElementById('cut');
+  cutBtn.addEventListener('click', () => {
+    const on = cutBtn.getAttribute('aria-pressed') !== 'true';
+    cutBtn.setAttribute('aria-pressed', on);
+    clips.length = 0; if (on) clips.push(clip);
+  });
+  function resetView() { camera.position.set(0, 110, 85); controls.target.set(0, 0, 4); controls.update(); }
+  document.getElementById('reset').addEventListener('click', resetView);
+  document.getElementById('top').addEventListener('click', () => { camera.position.set(0, 150, 0.01); controls.target.set(0, 0, 0); controls.update(); });
+  resetView();
+
+  function size() {
+    const w = stage.clientWidth, h = stage.clientHeight;
+    renderer.setSize(w, h, false); camera.aspect = w / h;
+    camera.fov = w < 500 ? 46 : 32; camera.updateProjectionMatrix();
+  }
+  new ResizeObserver(size).observe(stage); size();
+
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const tmp = new THREE.Vector3();
+  (function tick() {
+    const k = reduce ? 1 : 0.14;
+    e += (target - e) * k; flipT += ((flipped ? 1 : 0) - flipT) * k;
+    place();
+    card.rotation.x = -Math.PI / 2 + Math.PI * flipT;
+    card.position.y = Math.sin(Math.PI * flipT) * 30 + flipT * (BACK + FRONT + 44 * e);
+    card.updateMatrixWorld();
+    tmp.set(0, CHIP.y, 0).applyMatrix4(card.matrixWorld);
+    const nrm = new THREE.Vector3(0, -1, 0).transformDirection(card.matrixWorld);
+    clip.setFromNormalAndCoplanarPoint(nrm, tmp);
+    controls.update(); renderer.render(scene, camera);
+    requestAnimationFrame(tick);
+  })();
+})();
+</script>
