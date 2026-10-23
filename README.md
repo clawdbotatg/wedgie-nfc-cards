@@ -22,3 +22,8 @@ Change sizes or add a tile: `make.py`, then
 `uv run --with manifold3d --with numpy --with fonttools python make.py`.
 
 3D preview: open `preview.html` (shows the older 1.6 mm version).
+
+## Dollar version (mockups)
+
+`dollar.html`: five dollar-bill face designs in 3D. Black tray with a border, white face inside it with an oval hole,
+an oval medallion over the chip. 1.4 mm. Made by `dollar.py` (same `uv run` line as above). No STLs yet.
