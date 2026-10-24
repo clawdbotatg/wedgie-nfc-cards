@@ -51,7 +51,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--accent); ou
     <h1>Dollar card #7</h1>
     <p class="sub">Mix ETH, with a seat for every part. The medallion and its two tabs drop into a shallow seat in the base, over the NFC sticker. A drop of glue on each tab, then the white lid on top.</p>
   </div>
-  <div class="picks" id="picks" role="group" aria-label="Design" hidden></div>
+  <div class="picks" id="picks" role="group" aria-label="Design"></div>
   <div id="stage"><span class="hint">drag to turn · pinch or scroll to zoom</span></div>
   <div class="controls">
     <label for="ex">Pull apart <input id="ex" type="range" min="0" max="1" step="0.01" value="0.5"></label>
@@ -82,7 +82,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--accent); ou
 const DATA = /*DATA*/null;
 (function () {
   const D = DATA.dims;
-  const COL = { glue: '#f2b33d', black: '#1a1b1a', white: '#f4f4ef', grey: '#a9aaab', green: '#22c452', red: '#e3312c' };
+  const COL = { blue: '#2775ca', glue: '#f2b33d', black: '#1a1b1a', white: '#f4f4ef', grey: '#a9aaab', green: '#22c452', red: '#e3312c' };
 
   const stage = document.getElementById('stage');
   const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
@@ -154,11 +154,11 @@ const DATA = /*DATA*/null;
     b.innerHTML = (n ? `<span class="n">${n}</span>` : '') + label;
     b.addEventListener('click', () => choose(i)); picks.appendChild(b); btns.push([b, i]);
   }
-  addBtn('All', '', -1);
+  addBtn('Both', '', -1);
   DATA.designs.forEach((d, i) => addBtn(d.name, i + 1, i));
 
   // grid spots for "all": rows of 3 or 4
-  const cols = cards.length > 6 ? 4 : 3, rows = Math.ceil(cards.length / cols);
+  const cols = Math.min(cards.length, cards.length > 6 ? 4 : 3), rows = Math.ceil(cards.length / cols);
   const spots = cards.map((_, j) => [((j % cols) - (cols - 1) / 2) * 96, (Math.floor(j / cols) - (rows - 1) / 2) * 60]);
   function choose(i) {
     sel = i;
@@ -169,7 +169,7 @@ const DATA = /*DATA*/null;
       c.root.position.x = x; c.root.position.z = z;
     });
     if (i === -1) {
-      note.innerHTML = '<b>All</b><p>Pick one above to pull it apart. 1–5 on the keyboard works too.</p>';
+      note.innerHTML = '<b>Both</b><p>Same base and lid, two medallions. Pick one to pull it apart.</p>';
     } else {
       const d = DATA.designs[i];
       note.innerHTML = `<b>${d.name}</b><p>${d.note}</p><p class="mono" style="margin-top:8px;color:var(--muted)">oval ${d.oval[0]} × ${d.oval[1]} mm</p>`;

@@ -49,7 +49,8 @@ Pry notches (first layer left out) at the base's ends and the medallion's top an
 | Print | Files | Prints |
 |---|---|---|
 | Base | `3mf/seven-base.3mf` or `stl/seven-base-black.stl` | floor down |
-| Medallion | `3mf/seven-medallion.3mf` (1 black, 2 grey, 3 green) | tabs down, face up. The green ETH steps up 0.8 mm. |
+| ETH medallion | `3mf/seven-medallion.3mf` (1 black, 2 grey, 3 green) | tabs down, face up. The green ETH steps up 0.8 mm. |
+| USDC medallion | `3mf/seven-medallion-usdc.3mf` (1 black, 2 blue) | tabs down, face up. Blue steps up 0.6 mm. |
 | Lid | `3mf/seven-lid.3mf` (1 white, 2 grey, 3 green, 4 red) | face down |
 
 Build: NFC sticker in its pocket, medallion + tabs in the seat, a drop of PETG super glue on each tab, lid on top.

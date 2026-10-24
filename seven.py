@@ -17,7 +17,7 @@ import os
 from manifold3d import CrossSection, JoinType, Manifold
 
 from dollar import BORDER, CHIP_D, mix_eth, oval, pack
-from make import FIT, HERE, INLAY, OUT, OUT3, H, R, W, circle, eth, face_down, rrect, save, save_3mf, slab
+from make import FIT, HERE, INLAY, OUT, OUT3, H, R, W, circle, eth, face_down, rrect, save, save_3mf, slab, text
 
 FLOOR = 1.2                 # base floor
 SEAT = 0.4                  # seat depth = medallion lip + tab thickness
@@ -63,25 +63,41 @@ def medallion(bw, bh, art):
     notches = sum((slab(CrossSection.square([NOTCH_W, 2 * NOTCH_IN], center=True).translate([0, sy * edge]),
                         FLOOR - SEAT - 1, FLOOR - SEAT + NOTCH) for sy in (-1, 1)), Manifold())
     parts["black"] = body - slab(taken, top - INLAY, top + 1) - notches
-    if "green" in art:                                     # stepped green above the face, smaller each layer
-        cs = art["green"] ^ oval(bw - 1.0, bh - 1.0)
+    for c, step_in in STEP_IN.items():                     # stepped color above the face, smaller each layer
+        if c not in art:
+            continue
+        cs = art[c] ^ oval(bw - 1.0, bh - 1.0)
         for k in range(1, STEPS + 1):
-            cs = cs.offset(-STEP_IN, JoinType.Miter)
+            cs = cs.offset(-step_in, JoinType.Miter)
             if cs.is_empty() or cs.area() < 0.3:
                 break
-            parts["green"] = parts["green"] + slab(cs, top + 0.2 * (k - 1), top + 0.2 * k)
-        print(f"green steps up to {parts['green'].bounding_box()[5] - top:.1f} mm above the face")
+            parts[c] = parts[c] + slab(cs, top + 0.2 * (k - 1), top + 0.2 * k)
+        print(f"{c} steps up to {parts[c].bounding_box()[5] - top:.1f} mm above the face")
     return parts
 
 
 LINE = 0.6                  # grey line width of the traced ETH logo
-STEP_IN, STEPS = 0.8, 8     # the green stands up in steps: each 0.2 layer this much smaller, until it is about a point
+STEPS = 8                   # the logo color stands up in 0.2 steps, each this much smaller, until it is about a point
+STEP_IN = {"green": 0.8, "blue": 0.4}
 
 
 def eth_traced(h):
     logo = eth(h)
     inside = logo.offset(-LINE, JoinType.Miter)
     return {"grey": logo - inside, "green": inside}
+
+
+def usdc(d):
+    """The USDC logo: two arcs and a dollar sign, d = the arcs' outer diameter."""
+    ro = d / 2
+    w, gap = d * 0.073, d * 0.125                         # arc width, half the gap top and bottom (from the logo)
+    arcs = circle(d) - circle(d - 2 * w) - CrossSection.square([2 * gap, d + 2], center=True)
+    arcs = arcs.offset(-w * 0.3, JoinType.Round).offset(w * 0.3, JoinType.Round)   # round the ends
+    dollar = text("$", d * 0.39, d * 0.66)
+    return {"blue": arcs + dollar}
+
+
+MEDALLIONS = {"eth": lambda ow, oh: eth_traced(min(ow, oh) * 0.62), "usdc": lambda ow, oh: usdc(min(ow, oh) - 3.5)}
 
 
 def glue():
@@ -113,30 +129,34 @@ def lid(ow, oh, inlays):
 
 if __name__ == "__main__":
     ow, oh, inlays, _, name, note = mix_eth()
-    art = eth_traced(min(ow, oh) * 0.62)
-    note = note.replace("ETH diamond", "ETH logo, grey outline, green inside")
     bw, bh = ow - 2 * FIT, oh - 2 * FIT
-    b, m, l = base(bw, bh), medallion(bw, bh, art), lid(ow, oh, inlays)
+    b, l = base(bw, bh), lid(ow, oh, inlays)
 
     os.makedirs(OUT, exist_ok=True)
     os.makedirs(OUT3, exist_ok=True)
     save(b["black"], "seven-base-black.stl")                       # floor down
     save_3mf([("black", b["black"])], "seven-base", AT["base"])
-    mp = {c: x.translate([0, 0, -(FLOOR - SEAT)]) for c, x in m.items()}   # lip down, face up
-    for c, x in mp.items():
-        save(x, f"seven-medallion-{c}.stl")
-    save_3mf([("black", mp["black"])] + [(c, x) for c, x in mp.items() if c != "black"], "seven-medallion", AT["medallion"])
     lp = {c: face_down(x, FLOOR + LID) for c, x in l.items()}      # face down
     for c, x in lp.items():
         save(x, f"seven-lid-{c}.stl")
     save_3mf([(c, lp[c]) for c in ("white", "grey", "green", "red") if c in lp], "seven-lid", AT["lid"])
 
-    m_render = dict(m, **glue())
+    designs = []
+    for key, art in MEDALLIONS.items():
+        m = medallion(bw, bh, art(ow, oh))
+        stem = "seven-medallion" if key == "eth" else f"seven-medallion-{key}"
+        mp = {c: x.translate([0, 0, -(FLOOR - SEAT)]) for c, x in m.items()}   # lip down, face up
+        for c, x in mp.items():
+            save(x, f"{stem}-{c}.stl")
+        save_3mf([("black", mp["black"])] + [(c, x) for c, x in mp.items() if c != "black"], stem, AT["medallion"])
+        label = {"eth": ("ETH", "ETH logo: grey outline, green inside, the green stepped up to a point."),
+                 "usdc": ("USDC", "USDC logo in blue on black: two arcs and a dollar sign, stepped up a little.")}[key]
+        designs.append({"name": label[0], "note": label[1], "oval": [ow, oh],
+                        "face": {c: pack(x) for c, x in l.items()},
+                        "medallion": {c: pack(x) for c, x in dict(m, **glue()).items()}})
+
     data = {"dims": dict(W=W, H=H, FLOOR=FLOOR, FACE=LID, POCKET=POCKET + SEAT, BORDER=BORDER, CHIP_D=CHIP_D),
-            "tray": {c: pack(x) for c, x in b.items()},
-            "designs": [{"name": "#7 Mix ETH", "note": note, "oval": [ow, oh],
-                         "face": {c: pack(x) for c, x in l.items()},
-                         "medallion": {c: pack(x) for c, x in m_render.items()}}]}
+            "tray": {c: pack(x) for c, x in b.items()}, "designs": designs}
     tpl = open(os.path.join(HERE, "seven.tpl.html")).read()
     html = tpl.replace("/*DATA*/null", json.dumps(data, separators=(",", ":")))
     open(os.path.join(HERE, "seven.html"), "w").write(html)
