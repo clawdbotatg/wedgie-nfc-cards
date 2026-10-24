@@ -65,7 +65,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--accent); ou
     <div class="box"><h2>This design</h2><div id="note"></div></div>
     <div class="box"><h2>Stack, bottom to top</h2>
       <div class="stack">
-        <div class="layer"><span class="sw" style="background:#1a1b1a"></span><p>Base<small>1.2 floor + 2.5 mm border. Seat 0.4 deep for the medallion and tabs, NFC pocket 0.2 deeper, 0.6 left under it. Pry notches at both ends.</small></p><span class="mono">1.2 + 0.8</span></div>
+        <div class="layer"><span class="sw" style="background:#1a1b1a"></span><p>Base<small>1.2 floor + 2.5 mm border. Seat 0.4 deep for the medallion and tabs, NFC pocket 0.2 deeper, 0.6 left under it. Glue pits under the lid's green corners. Pry notches at both ends.</small></p><span class="mono">1.2 + 0.8</span></div>
         <div class="layer"><span class="sw" style="background:#e9e2cf"></span><p>NFC sticker<small>In its pocket, under the medallion.</small></p><span class="mono">0.2</span></div>
         <div class="layer"><span class="sw" style="background:#1a1b1a"></span><p>Medallion<small>Lip + two tabs sit in the seat, flush with the floor. Pry notches top and bottom. Body comes up through the oval, flush with the lid.</small></p><span class="mono">1.2</span></div>
         <div class="layer"><span class="sw" style="background:#f2b33d"></span><p>Glue<small>One drop of PETG super glue on each tab.</small></p><span class="mono"></span></div>
@@ -185,7 +185,7 @@ const DATA = /*DATA*/null;
   const flipBtn = document.getElementById('flip');
   flipBtn.addEventListener('click', () => { flipped = !flipped; flipBtn.setAttribute('aria-pressed', flipped); flipBtn.textContent = flipped ? 'Show front' : 'Show back'; });
   function resetView() {
-    if (sel === -1) { camera.position.set(0, 330, 220); controls.target.set(0, 0, 0); }
+    if (sel === -1) { const k = cards.length <= 3 ? 0.55 : 1; camera.position.set(0, 330 * k, 220 * k); controls.target.set(0, 0, 0); }
     else { camera.position.set(0, 105, 82); controls.target.set(0, 0, 3); }
     controls.update();
   }

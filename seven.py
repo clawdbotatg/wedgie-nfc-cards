@@ -16,13 +16,14 @@ import os
 
 from manifold3d import CrossSection, JoinType, Manifold
 
-from dollar import BORDER, CHIP_D, mix_eth, oval, pack
+from dollar import BORDER, CHIP_D, corners, mix_eth, oval, pack
 from make import FIT, HERE, INLAY, OUT, OUT3, H, R, W, circle, eth, face_down, rrect, save, save_3mf, slab, text
 
 FLOOR = 1.2                 # base floor
 SEAT = 0.4                  # seat depth = medallion lip + tab thickness
 POCKET = 0.2                # NFC pocket, under the seat; leaves 0.6 (3 layers) under the sticker.
                             # 1 layer there tore coming off the bed.
+PIT = 0.2                   # glue pits in the floor under the lid's green circles: one layer deep
 NOTCH = 0.2                 # pry notch: the first layer left out at an edge, so a blade slips under
 NOTCH_W, NOTCH_IN = 8.0, 3.0
 # where each print sits on the 256 mm bed: away from the hot center
@@ -41,14 +42,17 @@ def medallion_outline(bw, bh):
     return lip + tabs
 
 
-def base(bw, bh):
+def base(bw, bh, pits=None):
     floor = slab(rrect(W, H, R), 0, FLOOR)
     seat = slab(medallion_outline(bw, bh).offset(FIT), FLOOR - SEAT, FLOOR + 1)
     pocket = slab(circle(CHIP_D), FLOOR - SEAT - POCKET, FLOOR + 1)
     rim = slab(rrect(W, H, R) - rrect(W - 2 * BORDER, H - 2 * BORDER, R - BORDER), FLOOR, FLOOR + LID)
     notches = sum((slab(CrossSection.square([2 * NOTCH_IN, NOTCH_W], center=True).translate([sx * W / 2, 0]), -1, NOTCH)
                    for sx in (-1, 1)), Manifold())
-    return {"black": floor - seat - pocket + rim - notches}
+    out = floor - seat - pocket + rim - notches
+    if pits is not None:                                    # glue pits right under the lid's green corners
+        out = out - slab(pits, FLOOR - PIT, FLOOR + 1)
+    return {"black": out}
 
 
 def medallion(bw, bh, art):
@@ -100,6 +104,12 @@ def usdc(d):
 MEDALLIONS = {"eth": lambda ow, oh: eth_traced(min(ow, oh) * 0.62), "usdc": lambda ow, oh: usdc(min(ow, oh) - 3.5)}
 
 
+def pit_glue():
+    """A drop in each glue pit (render only)."""
+    drop = Manifold.sphere(2.2, 32).scale([1, 1, 0.12])
+    return sum((drop.translate([x, y, FLOOR - PIT]) for x, y in corners(7, 7)), Manifold())
+
+
 def glue():
     """A drop on each tab's outer end (render only)."""
     x = TAB_TO - TAB_W / 2
@@ -130,7 +140,8 @@ def lid(ow, oh, inlays):
 if __name__ == "__main__":
     ow, oh, inlays, _, name, note = mix_eth()
     bw, bh = ow - 2 * FIT, oh - 2 * FIT
-    b, l = base(bw, bh), lid(ow, oh, inlays)
+    keep = rrect(FW - 1.2, FH - 1.2, max(FR - 0.6, 0.3))
+    b, l = base(bw, bh, inlays["green"] ^ keep), lid(ow, oh, inlays)
 
     os.makedirs(OUT, exist_ok=True)
     os.makedirs(OUT3, exist_ok=True)
@@ -156,7 +167,7 @@ if __name__ == "__main__":
                         "medallion": {c: pack(x) for c, x in dict(m, **glue()).items()}})
 
     data = {"dims": dict(W=W, H=H, FLOOR=FLOOR, FACE=LID, POCKET=POCKET + SEAT, BORDER=BORDER, CHIP_D=CHIP_D),
-            "tray": {c: pack(x) for c, x in b.items()}, "designs": designs}
+            "tray": {c: pack(x) for c, x in dict(b, glue=pit_glue()).items()}, "designs": designs}
     tpl = open(os.path.join(HERE, "seven.tpl.html")).read()
     html = tpl.replace("/*DATA*/null", json.dumps(data, separators=(",", ":")))
     open(os.path.join(HERE, "seven.html"), "w").write(html)
