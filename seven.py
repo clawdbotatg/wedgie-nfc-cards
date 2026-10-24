@@ -17,12 +17,13 @@ import os
 from manifold3d import CrossSection, JoinType, Manifold
 
 from dollar import BORDER, CHIP_D, corners, mix_eth, oval, pack
-from make import FIT, HERE, INLAY, OUT, OUT3, H, R, W, circle, eth, face_down, rrect, save, save_3mf, slab, text
+from make import FIT, HERE, INLAY, OUT, OUT3, H, R, W, circle, eth, rrect, save, save_3mf, slab, text
 
 FLOOR = 1.2                 # base floor
 SEAT = 0.4                  # seat depth = medallion lip + tab thickness
 POCKET = 0.2                # NFC pocket, under the seat; leaves 0.6 (3 layers) under the sticker.
                             # 1 layer there tore coming off the bed.
+RAISE, RAISE_IN = 2, 0.5     # lid's green circles stand up this many layers, each this much smaller
 PIT = 0.2                   # glue pits in the floor under the lid's green circles: one layer deep
 NOTCH = 0.2                 # pry notch: the first layer left out at an edge, so a blade slips under
 NOTCH_W, NOTCH_IN = 8.0, 3.0
@@ -134,6 +135,11 @@ def lid(ow, oh, inlays):
         parts[c] = slab(cs, z1 - INLAY, z1)
         taken = taken + cs
     parts["white"] = body - slab(taken, z1 - INLAY, z1 + 1)
+    if "green" in cut:                                     # raised green: the last layers, green only
+        cs = cut["green"]
+        for k in range(RAISE):
+            cs = cs.offset(-RAISE_IN, JoinType.Round)
+            parts["green"] = parts["green"] + slab(cs, z1 + 0.2 * k, z1 + 0.2 * (k + 1))
     return parts
 
 
@@ -147,7 +153,7 @@ if __name__ == "__main__":
     os.makedirs(OUT3, exist_ok=True)
     save(b["black"], "seven-base-black.stl")                       # floor down
     save_3mf([("black", b["black"])], "seven-base", AT["base"])
-    lp = {c: face_down(x, FLOOR + LID) for c, x in l.items()}      # face down
+    lp = {c: x.translate([0, 0, -FLOOR]) for c, x in l.items()}    # face up: the raised green prints last
     for c, x in lp.items():
         save(x, f"seven-lid-{c}.stl")
     save_3mf([(c, lp[c]) for c in ("white", "grey", "green", "red") if c in lp], "seven-lid", AT["lid"])
