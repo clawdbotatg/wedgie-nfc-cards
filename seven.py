@@ -19,9 +19,14 @@ from manifold3d import CrossSection, JoinType, Manifold
 from dollar import BORDER, CHIP_D, mix_eth, oval, pack
 from make import FIT, HERE, INLAY, OUT, OUT3, H, R, W, circle, eth, face_down, rrect, save, save_3mf, slab
 
-FLOOR = 0.8                 # base floor
+FLOOR = 1.2                 # base floor
 SEAT = 0.4                  # seat depth = medallion lip + tab thickness
-POCKET = 0.2                # NFC pocket, under the seat; leaves 0.2 under the sticker
+POCKET = 0.2                # NFC pocket, under the seat; leaves 0.6 (3 layers) under the sticker.
+                            # 1 layer there tore coming off the bed.
+NOTCH = 0.2                 # pry notch: the first layer left out at an edge, so a blade slips under
+NOTCH_W, NOTCH_IN = 8.0, 3.0
+# where each print sits on the 256 mm bed: away from the hot center
+AT = {"base": (75, 190), "medallion": (60, 60), "lid": (185, 70)}
 LID = 0.8                   # white lid, flush with the border
 GAP = 0.1                   # lid to border, each side
 FW, FH = W - 2 * BORDER - 2 * GAP, H - 2 * BORDER - 2 * GAP
@@ -41,7 +46,9 @@ def base(bw, bh):
     seat = slab(medallion_outline(bw, bh).offset(FIT), FLOOR - SEAT, FLOOR + 1)
     pocket = slab(circle(CHIP_D), FLOOR - SEAT - POCKET, FLOOR + 1)
     rim = slab(rrect(W, H, R) - rrect(W - 2 * BORDER, H - 2 * BORDER, R - BORDER), FLOOR, FLOOR + LID)
-    return {"black": floor - seat - pocket + rim}
+    notches = sum((slab(CrossSection.square([2 * NOTCH_IN, NOTCH_W], center=True).translate([sx * W / 2, 0]), -1, NOTCH)
+                   for sx in (-1, 1)), Manifold())
+    return {"black": floor - seat - pocket + rim - notches}
 
 
 def medallion(bw, bh, art):
@@ -52,7 +59,10 @@ def medallion(bw, bh, art):
         cs = cs ^ oval(bw - 1.0, bh - 1.0)
         parts[c] = slab(cs, top - INLAY, top)
         taken = taken + cs
-    parts["black"] = body - slab(taken, top - INLAY, top + 1)
+    edge = bh / 2 + LIP_W                                   # pry notches at the oval's top and bottom
+    notches = sum((slab(CrossSection.square([NOTCH_W, 2 * NOTCH_IN], center=True).translate([0, sy * edge]),
+                        FLOOR - SEAT - 1, FLOOR - SEAT + NOTCH) for sy in (-1, 1)), Manifold())
+    parts["black"] = body - slab(taken, top - INLAY, top + 1) - notches
     return parts
 
 
@@ -102,14 +112,15 @@ if __name__ == "__main__":
     os.makedirs(OUT, exist_ok=True)
     os.makedirs(OUT3, exist_ok=True)
     save(b["black"], "seven-base-black.stl")                       # floor down
+    save_3mf([("black", b["black"])], "seven-base", AT["base"])
     mp = {c: x.translate([0, 0, -(FLOOR - SEAT)]) for c, x in m.items()}   # lip down, face up
     for c, x in mp.items():
         save(x, f"seven-medallion-{c}.stl")
-    save_3mf([("black", mp["black"])] + [(c, x) for c, x in mp.items() if c != "black"], "seven-medallion")
+    save_3mf([("black", mp["black"])] + [(c, x) for c, x in mp.items() if c != "black"], "seven-medallion", AT["medallion"])
     lp = {c: face_down(x, FLOOR + LID) for c, x in l.items()}      # face down
     for c, x in lp.items():
         save(x, f"seven-lid-{c}.stl")
-    save_3mf([(c, lp[c]) for c in ("white", "grey", "green", "red") if c in lp], "seven-lid")
+    save_3mf([(c, lp[c]) for c in ("white", "grey", "green", "red") if c in lp], "seven-lid", AT["lid"])
 
     m_render = dict(m, **glue())
     data = {"dims": dict(W=W, H=H, FLOOR=FLOOR, FACE=LID, POCKET=POCKET + SEAT, BORDER=BORDER, CHIP_D=CHIP_D),

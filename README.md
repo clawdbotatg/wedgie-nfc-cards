@@ -43,11 +43,12 @@ Not tested: the press fit (0.05 mm gap, `PRESS` in `dollar.py`), the single-laye
 
 ## #7 Mix ETH, with a seat (seven.py → seven.html, wedgie.dev/dollar/seven)
 
-1.6 mm. Every part has its own place.
+2.0 mm. Every part has its own place. 3 layers (0.6) under the NFC sticker: 1 layer tore coming off the bed.
+Pry notches (first layer left out) at the base's ends and the medallion's top and bottom. The 3MFs sit off the bed's center.
 
 | Print | Files | Prints |
 |---|---|---|
-| Base | `stl/seven-base-black.stl` | floor down |
+| Base | `3mf/seven-base.3mf` or `stl/seven-base-black.stl` | floor down |
 | Medallion | `3mf/seven-medallion.3mf` (1 black, 2 grey, 3 green) | tabs down, face up. Iron the top. |
 | Lid | `3mf/seven-lid.3mf` (1 white, 2 grey, 3 green, 4 red) | face down |
 

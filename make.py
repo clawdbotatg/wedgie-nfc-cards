@@ -72,7 +72,7 @@ def save(m, name):
     print(f"{name:24s} {len(t):6d} tris  {hi[0]-lo[0]:.1f} x {hi[1]-lo[1]:.1f} x {hi[2]-lo[2]:.2f} mm")
 
 
-def save_3mf(parts, name):
+def save_3mf(parts, name, at=(128, 128)):
     """One object, one part per color, each part on its own filament (1, 2, ...), the order given.
     Bambu Studio's own layout, so the CLI slices it with no GUI."""
     objs, comps, cfg = [], [], []
@@ -90,7 +90,7 @@ def save_3mf(parts, name):
              'xmlns="http://schemas.microsoft.com/3dmanufacturing/core/2015/02" xmlns:BambuStudio="http://schemas.bambulab.com/package/2021">'
              '<metadata name="Application">BambuStudio-02.07.01.62</metadata><metadata name="BambuStudio:3mfVersion">1</metadata>'
              f'<resources>{"".join(objs)}<object id="{top}" type="model"><components>{"".join(comps)}</components></object></resources>'
-             f'<build><item objectid="{top}" transform="1 0 0 0 1 0 0 0 1 128 128 0" printable="1"/></build></model>')
+             f'<build><item objectid="{top}" transform="1 0 0 0 1 0 0 0 1 {at[0]} {at[1]} 0" printable="1"/></build></model>')
     settings = ('<?xml version="1.0" encoding="UTF-8"?>\n<config>'
                 f'<object id="{top}"><metadata key="name" value="{name}"/><metadata key="extruder" value="1"/>{"".join(cfg)}</object>'
                 '</config>')
