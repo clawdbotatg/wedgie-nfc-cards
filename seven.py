@@ -35,6 +35,7 @@ FW, FH = W - 2 * BORDER - 2 * GAP, H - 2 * BORDER - 2 * GAP
 FR = R - BORDER - GAP
 LIP_W = 2.0                 # medallion lip reach past the oval
 TAB_W, TAB_TO = 6.0, 23.0   # tabs: width, and how far out they reach from the center (each side)
+GLUE_ROOM = 1.5             # extra room in the seat around each tab, for the glue to spread
 
 
 def medallion_outline(bw, bh):
@@ -45,7 +46,8 @@ def medallion_outline(bw, bh):
 
 def base(bw, bh, pits=None):
     floor = slab(rrect(W, H, R), 0, FLOOR)
-    seat = slab(medallion_outline(bw, bh).offset(FIT), FLOOR - SEAT, FLOOR + 1)
+    tabs = rrect(2 * TAB_TO, TAB_W, TAB_W / 2).offset(FIT + GLUE_ROOM, JoinType.Round)
+    seat = slab(medallion_outline(bw, bh).offset(FIT) + tabs, FLOOR - SEAT, FLOOR + 1)
     pocket = slab(circle(CHIP_D), FLOOR - SEAT - POCKET, FLOOR + 1)
     rim = slab(rrect(W, H, R) - rrect(W - 2 * BORDER, H - 2 * BORDER, R - BORDER), FLOOR, FLOOR + LID)
     notches = sum((slab(CrossSection.square([2 * NOTCH_IN, NOTCH_W], center=True).translate([sx * W / 2, 0]), -1, NOTCH)
