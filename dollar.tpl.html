@@ -49,7 +49,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--accent); ou
 <div class="wrap">
   <div>
     <h1>Dollar NFC card</h1>
-    <p class="sub">Five face designs. Black tray with a border, white face inside it, an oval medallion over the chip. Same five filaments: black, white, grey, green, red.</p>
+    <p class="sub">Six face designs. Black tray with a border, white face inside it, an oval medallion over the chip. Same five filaments: black, white, grey, green, red.</p>
   </div>
   <div class="picks" id="picks" role="group" aria-label="Design"></div>
   <div id="stage"><span class="hint">drag to turn · pinch or scroll to zoom</span></div>
@@ -149,11 +149,11 @@ const DATA = /*DATA*/null;
     b.innerHTML = (n ? `<span class="n">${n}</span>` : '') + label;
     b.addEventListener('click', () => choose(i)); picks.appendChild(b); btns.push([b, i]);
   }
-  addBtn('All five', '', -1);
+  addBtn('All', '', -1);
   DATA.designs.forEach((d, i) => addBtn(d.name, i + 1, i));
 
-  // grid spots for "all five": 3 on top, 2 below
-  const spots = [[-96, -32], [0, -32], [96, -32], [-48, 32], [48, 32]];
+  // grid spots for "all": 3 on top, 2 below
+  const spots = [[-96, -32], [0, -32], [96, -32], [-96, 32], [0, 32], [96, 32]];
   function choose(i) {
     sel = i;
     btns.forEach(([b, j]) => b.setAttribute('aria-pressed', j === i));
@@ -163,7 +163,7 @@ const DATA = /*DATA*/null;
       c.root.position.x = x; c.root.position.z = z;
     });
     if (i === -1) {
-      note.innerHTML = '<b>All five</b><p>Pick one above to pull it apart. 1–5 on the keyboard works too.</p>';
+      note.innerHTML = '<b>All</b><p>Pick one above to pull it apart. 1–5 on the keyboard works too.</p>';
     } else {
       const d = DATA.designs[i];
       note.innerHTML = `<b>${i + 1}. ${d.name}</b><p>${d.note}</p><p class="mono" style="margin-top:8px;color:var(--muted)">oval ${d.oval[0]} × ${d.oval[1]} mm</p>`;

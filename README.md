@@ -28,12 +28,12 @@ Change sizes or add a tile: `make.py`, then
 `dollar.html`: five dollar-bill face designs in 3D. Black tray with a border, white face inside it with an oval hole,
 an oval medallion over the chip. 1.4 mm. Made by `dollar.py` (same `uv run` line as above). Live at wedgie.dev/dollar.
 
-Picked: #4 Seals. Print files:
+Picked: #6 Mix (#1 Classic + #4's red seals). Same files for #4 as `dollar-seals-*`. Print files:
 
 | Print | Files | Prints |
 |---|---|---|
 | Tray | `stl/dollar-tray-black.stl` | floor down |
-| Face | `3mf/dollar-seals-face.3mf` (1 white, 2 grey, 3 green, 4 red) | face down |
-| Medallion | `3mf/dollar-seals-medallion.3mf` (1 black, 2 grey, 3 green) | lip down, face up. Iron the top. |
+| Face | `3mf/dollar-mix-face.3mf` (1 white, 2 grey, 3 green, 4 red) | face down |
+| Medallion | `3mf/dollar-mix-medallion.3mf` (1 black, 2 grey) | lip down, face up. Iron the top. |
 
 Build: sticker in the tray's pocket, medallion over it, face drops in over the medallion's lip. Glue dots under the face.
