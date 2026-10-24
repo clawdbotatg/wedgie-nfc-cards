@@ -4,7 +4,7 @@
 
   base       black. Floor + border. In the floor: a shallow seat shaped like the medallion's lip and two tabs,
              and under it a deeper pocket for the NFC sticker.
-  medallion  black + ETH. Lip and two side tabs drop into the seat, flush with the floor. Body comes up
+  medallion  black, the ETH logo traced in grey. Lip and two side tabs drop into the seat, flush with the floor. Body comes up
              through the lid's oval, flush with the lid.
   lid        white face, flat bottom. Sits on the floor and the tabs, inside the border.
 
@@ -14,10 +14,10 @@ Writes seven.html (3D) and the print files.
 import json
 import os
 
-from manifold3d import CrossSection, Manifold
+from manifold3d import CrossSection, JoinType, Manifold
 
 from dollar import BORDER, CHIP_D, FH, FR, FW, PRESS, mix_eth, oval, pack
-from make import FIT, HERE, INLAY, OUT, OUT3, H, R, W, circle, face_down, rrect, save, save_3mf, slab
+from make import FIT, HERE, INLAY, OUT, OUT3, H, R, W, circle, eth, face_down, rrect, save, save_3mf, slab
 
 FLOOR = 0.6                 # base floor
 SEAT = 0.2                  # seat depth = medallion lip + tab thickness
@@ -53,6 +53,14 @@ def medallion(bw, bh, art):
     return parts
 
 
+LINE = 0.6                  # grey line width of the traced ETH logo
+
+
+def eth_traced(h):
+    logo = eth(h)
+    return {"grey": logo - logo.offset(-LINE, JoinType.Miter)}
+
+
 def glue():
     """A drop on each tab's outer end (render only)."""
     x = TAB_TO - TAB_W / 2
@@ -81,7 +89,9 @@ def lid(ow, oh, inlays):
 
 
 if __name__ == "__main__":
-    ow, oh, inlays, art, name, note = mix_eth()
+    ow, oh, inlays, _, name, note = mix_eth()
+    art = eth_traced(min(ow, oh) * 0.62)
+    note = note.replace("ETH diamond", "ETH logo traced in grey")
     bw, bh = ow - 2 * FIT, oh - 2 * FIT
     b, m, l = base(bw, bh), medallion(bw, bh, art), lid(ow, oh, inlays)
 
