@@ -43,7 +43,7 @@ Not tested: the press fit (0.05 mm gap, `PRESS` in `dollar.py`), the single-laye
 
 ## #7 Mix ETH, with a seat (seven.py → seven.html, wedgie.dev/dollar/seven)
 
-1.2 mm. Every part has its own place.
+1.6 mm. Every part has its own place.
 
 | Print | Files | Prints |
 |---|---|---|

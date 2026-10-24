@@ -16,13 +16,16 @@ import os
 
 from manifold3d import CrossSection, JoinType, Manifold
 
-from dollar import BORDER, CHIP_D, FH, FR, FW, PRESS, mix_eth, oval, pack
+from dollar import BORDER, CHIP_D, mix_eth, oval, pack
 from make import FIT, HERE, INLAY, OUT, OUT3, H, R, W, circle, eth, face_down, rrect, save, save_3mf, slab
 
-FLOOR = 0.6                 # base floor
-SEAT = 0.2                  # seat depth = medallion lip + tab thickness
+FLOOR = 0.8                 # base floor
+SEAT = 0.4                  # seat depth = medallion lip + tab thickness
 POCKET = 0.2                # NFC pocket, under the seat; leaves 0.2 under the sticker
-LID = 0.6                   # white lid, flush with the border
+LID = 0.8                   # white lid, flush with the border
+GAP = 0.1                   # lid to border, each side
+FW, FH = W - 2 * BORDER - 2 * GAP, H - 2 * BORDER - 2 * GAP
+FR = R - BORDER - GAP
 LIP_W = 2.0                 # medallion lip reach past the oval
 TAB_W, TAB_TO = 6.0, 23.0   # tabs: width, and how far out they reach from the center (each side)
 
