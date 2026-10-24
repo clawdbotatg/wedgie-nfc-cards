@@ -162,20 +162,65 @@ def modern():
         "Modern", "Green quarter-rings in the corners, red bars left and right, one thin grey frame. A big 1 in the oval."
 
 
+def frame_line(inset, w=0.6):
+    return rrect(FW - 2 * inset, FH - 2 * inset, max(FR - inset, 0.5)) - rrect(FW - 2 * inset - 2 * w, FH - 2 * inset - 2 * w, max(FR - inset - w, 0.3))
+
+
+def mixv(name, note, ow=30, oh=38, seal_d=13, teeth=24, sx=26, corner_d=8.5, corner_ring=False, rules=2, wavy=False,
+         frames=(1.2,), seal_center="grey", art="bust"):
+    """#1 Classic's green corners + grey rules, #5's thin grey frame, #4's red seals, and knobs to vary them."""
+    green, grey = CrossSection(), CrossSection()
+    for x, y in corners(7, 7):
+        green = green + circle(corner_d, x, y)
+        if corner_ring:
+            grey = grey + ring(corner_d + 2.4, 0.6, x, y)
+    hole = seal_d * 0.67
+    red = seal(seal_d, teeth, seal_d * 0.085, -sx, 0) + seal(seal_d, teeth, seal_d * 0.085, sx, 0)
+    red = red - circle(hole, -sx, 0) - circle(hole, sx, 0)
+    if seal_center == "grey":
+        grey = grey + ring(hole - 1.2, 0.6, -sx, 0) + ring(hole - 1.2, 0.6, sx, 0)
+    else:
+        green = green + circle(hole - 1.6, -sx, 0) + circle(hole - 1.6, sx, 0)
+    for inset in frames:
+        grey = grey + frame_line(inset)
+    x0 = -FW / 2 + 7 + corner_d / 2 + 1.5
+    ys = (FH / 2 - 3.0, FH / 2 - 4.8)[:rules]
+    for y in ys:
+        for sy in (1, -1):
+            grey = grey + (wave(x0, -x0, sy * y, 0.6, 5, 0.6) if wavy else hline(x0, -x0, sy * y, 0.6))
+    arts = {"bust": lambda: {"grey": face_art(ow, oh)}, "pyramid": lambda: pyramid_art(ow, oh),
+            "eth": lambda: {"green": eth(min(ow, oh) * 0.62)}, "$": lambda: {"white": text("$", ow * 0.45, oh * 0.6)}}
+    return ow, oh, {"green": green, "red": red, "grey": grey}, arts[art](), name, note
+
+
 def mix():
-    """#1 Classic's green corners and grey rules, #4's red seals."""
-    ow, oh = 30, 38
-    green = sum((circle(8.5, x, y) for x, y in corners(7, 7)), CrossSection())
-    red = seal(13, 24, 1.1, -26, 0) + seal(13, 24, 1.1, 26, 0)
-    red = red - circle(8.7, -26, 0) - circle(8.7, 26, 0)
-    grey = ring(7.5, 0.6, -26, 0) + ring(7.5, 0.6, 26, 0)
-    for y in (FH / 2 - 3.0, FH / 2 - 4.8, -(FH / 2 - 3.0), -(FH / 2 - 4.8)):
-        grey = grey + hline(-FW / 2 + 13, FW / 2 - 13, y, 0.6)
-    return ow, oh, {"green": green, "red": red, "grey": grey}, {"grey": face_art(ow, oh)}, \
-        "Mix", "#1 Classic's green corners and grey lines, #4's red seals. A bust in the oval."
+    return mixv("Mix", "#1 Classic's green corners and grey lines, #5's thin grey frame, #4's red seals. A bust in the oval.")
 
 
-DESIGNS = [classic, rosette, frame, seals, modern, mix]
+def mix_eth():
+    return mixv("Mix ETH", "Same as Mix, ETH diamond in the oval.", art="eth")
+
+
+def mix_big():
+    return mixv("Big seals", "Bigger seals with more teeth and a green center, smaller green corners, one grey line.",
+                seal_d=15.5, teeth=32, sx=27, corner_d=7, rules=1, seal_center="green")
+
+
+def mix_wide():
+    return mixv("Wide", "Wide oval, seals pushed out, double grey frame. A bust in the oval.",
+                ow=40, oh=30, seal_d=12, sx=32.5, corner_d=7.5, frames=(1.2, 2.4))
+
+
+def mix_wavy():
+    return mixv("Wavy", "Wavy grey lines instead of straight, a dollar sign in the oval.", wavy=True, art="$")
+
+
+def mix_ringed():
+    return mixv("Ringed", "Grey rings around the green corners, pyramid and eye in the oval.",
+                corner_d=7, corner_ring=True, rules=1, art="pyramid")
+
+
+DESIGNS = [classic, rosette, frame, seals, modern, mix, mix_eth, mix_big, mix_wide, mix_wavy, mix_ringed]
 
 
 # ---------- the parts, assembled (z up, face up)

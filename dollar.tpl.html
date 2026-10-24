@@ -49,7 +49,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--accent); ou
 <div class="wrap">
   <div>
     <h1>Dollar NFC card</h1>
-    <p class="sub">Six face designs. Black tray with a border, white face inside it, an oval medallion over the chip. Same five filaments: black, white, grey, green, red.</p>
+    <p class="sub">Eleven face designs: the first five, then #6 Mix and five variations of it. Black tray with a border, white face inside it, an oval medallion over the chip. Same five filaments: black, white, grey, green, red.</p>
   </div>
   <div class="picks" id="picks" role="group" aria-label="Design"></div>
   <div id="stage"><span class="hint">drag to turn · pinch or scroll to zoom</span></div>
@@ -152,8 +152,9 @@ const DATA = /*DATA*/null;
   addBtn('All', '', -1);
   DATA.designs.forEach((d, i) => addBtn(d.name, i + 1, i));
 
-  // grid spots for "all": 3 on top, 2 below
-  const spots = [[-96, -32], [0, -32], [96, -32], [-96, 32], [0, 32], [96, 32]];
+  // grid spots for "all": rows of 3 or 4
+  const cols = cards.length > 6 ? 4 : 3, rows = Math.ceil(cards.length / cols);
+  const spots = cards.map((_, j) => [((j % cols) - (cols - 1) / 2) * 96, (Math.floor(j / cols) - (rows - 1) / 2) * 60]);
   function choose(i) {
     sel = i;
     btns.forEach(([b, j]) => b.setAttribute('aria-pressed', j === i));
@@ -171,7 +172,7 @@ const DATA = /*DATA*/null;
     resetView();
   }
   addEventListener('keydown', e => { if (e.target.tagName === 'INPUT') return;
-    const k = +e.key; if (k >= 1 && k <= cards.length) choose(k - 1); if (e.key === '0') choose(-1); });
+    const k = +e.key; if (k >= 1 && k <= Math.min(9, cards.length)) choose(k - 1); if (e.key === '0') choose(-1); });
 
   const ex = document.getElementById('ex');
   let target = 0, e = 0, flipped = false, flipT = 0;
@@ -179,13 +180,13 @@ const DATA = /*DATA*/null;
   const flipBtn = document.getElementById('flip');
   flipBtn.addEventListener('click', () => { flipped = !flipped; flipBtn.setAttribute('aria-pressed', flipped); flipBtn.textContent = flipped ? 'Show front' : 'Show back'; });
   function resetView() {
-    if (sel === -1) { camera.position.set(0, 260, 170); controls.target.set(0, 0, 0); }
+    if (sel === -1) { camera.position.set(0, 330, 220); controls.target.set(0, 0, 0); }
     else { camera.position.set(0, 105, 82); controls.target.set(0, 0, 3); }
     controls.update();
   }
   document.getElementById('reset').addEventListener('click', resetView);
   document.getElementById('top').addEventListener('click', () => {
-    camera.position.set(0, sel === -1 ? 330 : 150, 0.01); controls.target.set(0, 0, 0); controls.update(); });
+    camera.position.set(0, sel === -1 ? 420 : 150, 0.01); controls.target.set(0, 0, 0); controls.update(); });
 
   function size() {
     const w = stage.clientWidth, h = stage.clientHeight;
