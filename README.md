@@ -23,17 +23,20 @@ Change sizes or add a tile: `make.py`, then
 
 3D preview: open `preview.html` (shows the older 1.6 mm version).
 
-## Dollar version (mockups)
+## Dollar version
 
-`dollar.html`: five dollar-bill face designs in 3D. Black tray with a border, white face inside it with an oval hole,
-an oval medallion over the chip. 1.4 mm. Made by `dollar.py` (same `uv run` line as above). Live at wedgie.dev/dollar.
+`dollar.html` (live at wedgie.dev/dollar): eleven dollar-bill face designs in 3D. Made by `dollar.py`
+(same `uv run` line as above).
 
-Picked: #6 Mix (#1 Classic + #4's red seals). Same files for #4 as `dollar-seals-*`. Print files:
+Picked: #11 Ringed. 1.0 mm. Print files:
 
 | Print | Files | Prints |
 |---|---|---|
-| Tray | `stl/dollar-tray-black.stl` | floor down |
-| Face | `3mf/dollar-mix-face.3mf` (1 white, 2 grey, 3 green, 4 red) | face down |
-| Medallion | `3mf/dollar-mix-medallion.3mf` (1 black, 2 grey) | lip down, face up. Iron the top. |
+| Back | `stl/dollar-tray-black.stl` | floor down |
+| Face | `3mf/dollar-ringed-face.3mf` (1 white, 2 grey, 3 green, 4 red) | face down |
+| Oval (swappable) | `3mf/dollar-ringed-medallion.3mf` (1 black, 2 grey, 3 green) | lip down, face up. Iron the top. |
 
-Build: sticker in the tray's pocket, medallion over it, face drops in over the medallion's lip. Glue dots under the face.
+Build: sticker in the back's pocket, oval piece over it, press the face into the border. No glue.
+Swap: push the face out through the hole in the back.
+
+Not tested: the press fit (0.05 mm gap, `PRESS` in `dollar.py`), the single-layer lip and floor under the chip.

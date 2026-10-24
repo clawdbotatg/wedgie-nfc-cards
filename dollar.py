@@ -8,7 +8,8 @@ Three prints:
            Green / red / grey are 2-layer inlays in its top.
   medallion  the oval piece. Lip under the face, body up through the hole. Swappable, like the old tile.
 
-1.4 mm total (was 1.8).
+1.0 mm total (was 1.8). The face press-fits into the border; push it out through the hole in the back
+to swap the medallion.
 """
 import base64
 import json
@@ -18,17 +19,21 @@ import os
 import numpy as np
 from manifold3d import CrossSection, FillRule
 
-from make import FIT, HERE, INLAY, LIP, OUT, OUT3, R, SEG, SINK, H, W, circle, eth, face_down, rrect, save, save_3mf, slab, text
+from make import FIT, HERE, INLAY, OUT, OUT3, R, SEG, H, W, circle, eth, face_down, rrect, save, save_3mf, slab, text
 
-FLOOR = 0.6                 # tray floor
-POCKET = 0.2                # chip pocket in the floor (sticker is ~0.15); leaves 0.4 under it
-FACE = 0.8                  # white face, flush with the border
+FLOOR = 0.4                 # tray floor
+POCKET = 0.2                # chip pocket in the floor (sticker is ~0.15); leaves 0.2 under it
+FACE = 0.6                  # white face, flush with the border
+LIP = 0.2                   # medallion lip, and the recess for it under the face
+SINK = 0.0                  # medallion face flush with the white face
+PRESS = 0.05                # face to border gap: a press fit, no glue
+PUSH_D, PUSH_X = 3.0, -36.0  # hole in the back to push the face out
 BORDER = 2.5                # black border width
 LIP_W = 2.5                 # medallion lip reach under the face
 CHIP_D = 25.6
 
-FW, FH = W - 2 * BORDER - 2 * FIT, H - 2 * BORDER - 2 * FIT     # the white face
-FR = R - BORDER - FIT
+FW, FH = W - 2 * BORDER - 2 * PRESS, H - 2 * BORDER - 2 * PRESS     # the white face
+FR = R - BORDER - PRESS
 
 
 def oval(w, h, x=0.0, y=0.0):
@@ -227,7 +232,7 @@ DESIGNS = [classic, rosette, frame, seals, modern, mix, mix_eth, mix_big, mix_wi
 
 def tray():
     pocket = slab(circle(CHIP_D), FLOOR - POCKET, FLOOR + 1)
-    floor = slab(rrect(W, H, R), 0, FLOOR) - pocket
+    floor = slab(rrect(W, H, R), 0, FLOOR) - pocket - slab(circle(PUSH_D, PUSH_X, 0), -1, FLOOR + 1)
     rim = slab(rrect(W, H, R) - rrect(W - 2 * BORDER, H - 2 * BORDER, R - BORDER), FLOOR, FLOOR + FACE)
     return {"black": floor + rim}
 
@@ -301,8 +306,7 @@ def print_files(d):
 
 
 if __name__ == "__main__":
-    print_files(seals)
-    print_files(mix)
+    print_files(mix_ringed)
     data = {"dims": dict(W=W, H=H, FLOOR=FLOOR, FACE=FACE, POCKET=POCKET, BORDER=BORDER, CHIP_D=CHIP_D, LIP=LIP, SINK=SINK),
             "tray": {c: pack(m) for c, m in tray().items()}, "designs": []}
     for d in DESIGNS:
