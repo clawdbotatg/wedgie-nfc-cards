@@ -23,7 +23,7 @@ PLA, 0.2 mm layers, no supports. About 6 per plate, away from the bed's hot cent
 | Print | File | Colors (filament order) | Prints |
 |---|---|---|---|
 | Base | `3mf/seven-base.3mf` | 1 black | floor down |
-| Lid | `3mf/seven-lid.3mf` | 1 white, 2 grey, 3 green, 4 red | face up. Green stands 0.4 mm up, red and grey 0.2; order each layer so green is last (no extra swap) |
+| Lid | `3mf/seven-lid.3mf` | 1 white, 2 grey, 3 green, 4 red | face down. Flat face |
 | ETH medallion | `3mf/seven-medallion.3mf` | 1 black, 2 grey, 3 green | tabs down, face up. Green steps up 0.8 mm |
 | USDC medallion | `3mf/seven-medallion-usdc.3mf` | 1 black, 2 blue | tabs down, face up. Blue steps up 0.6 mm |
 | CLAWD medallion | `3mf/seven-medallion-clawd.3mf` | 1 black, 2 red, 3 white | tabs down, face up |
@@ -42,7 +42,7 @@ PLA, 0.2 mm layers, no supports. About 6 per plate, away from the bed's hot cent
 - Pry notches (first layer left out) at the base's ends and the medallion's top and bottom, to get a blade under.
 - The medallion sits in a seat in the base, so nothing floats. 1.5 mm glue room around each tab.
 - Glue pits in the base sit exactly under the lid's green circles, so glue only tints green.
-- The lid prints face up so its colors can stand up off the face.
+- The lid prints face down, flat. Raised colors (face up) looked worse: uneven. `RAISE` in `seven.py` brings them back.
 
 ## Production run (sent 2026-10-24)
 

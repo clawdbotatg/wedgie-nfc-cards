@@ -18,14 +18,15 @@ import numpy as np
 from manifold3d import CrossSection, FillRule, JoinType, Manifold
 
 from dollar import BORDER, CHIP_D, corners, mix_eth, oval, pack
-from make import FIT, HERE, INLAY, OUT, OUT3, H, R, W, circle, eth, rrect, save, save_3mf, slab, text
+from make import FIT, HERE, INLAY, OUT, OUT3, H, R, W, circle, eth, face_down, rrect, save, save_3mf, slab, text
 
 FLOOR = 1.2                 # base floor
 SEAT = 0.4                  # seat depth = medallion lip + tab thickness
 POCKET = 0.2                # NFC pocket, under the seat; leaves 0.6 (3 layers) under the sticker.
                             # 1 layer there tore coming off the bed.
-# lid colors stand up above the face (it prints face up, so these are the last layers): layers, inset per layer
-RAISE = {"green": (2, 0.5), "red": (1, 0.0), "grey": (1, 0.0)}
+# lid colors standing up above the face: layers, inset per layer. Empty = flat lid printed face down
+# (Austin, 10-24: flat face-down lids look cleaner than raised ones)
+RAISE = {}
 PIT = 0.2                   # glue pits in the floor under the lid's green circles: one layer deep
 NOTCH = 0.2                 # pry notch: the first layer left out at an edge, so a blade slips under
 NOTCH_W, NOTCH_IN = 8.0, 3.0
@@ -166,7 +167,10 @@ if __name__ == "__main__":
     os.makedirs(OUT3, exist_ok=True)
     save(b["black"], "seven-base-black.stl")                       # floor down
     save_3mf([("black", b["black"])], "seven-base", AT["base"])
-    lp = {c: x.translate([0, 0, -FLOOR]) for c, x in l.items()}    # face up: the raised green prints last
+    if RAISE:
+        lp = {c: x.translate([0, 0, -FLOOR]) for c, x in l.items()}    # face up: raised colors print last
+    else:
+        lp = {c: face_down(x, FLOOR + LID) for c, x in l.items()}      # face down: flat, smooth face
     for c, x in lp.items():
         save(x, f"seven-lid-{c}.stl")
     save_3mf([(c, lp[c]) for c in ("white", "grey", "green", "red") if c in lp], "seven-lid", AT["lid"])
