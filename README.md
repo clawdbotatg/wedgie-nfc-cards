@@ -53,6 +53,6 @@ Pry notches (first layer left out) at the base's ends and the medallion's top an
 | ETH medallion | `3mf/seven-medallion.3mf` (1 black, 2 grey, 3 green) | tabs down, face up. The green ETH steps up 0.8 mm. |
 | USDC medallion | `3mf/seven-medallion-usdc.3mf` (1 black, 2 blue) | tabs down, face up. Blue steps up 0.6 mm. |
 | CLAWD medallion | `3mf/seven-medallion-clawd.3mf` (1 black, 2 red, 3 white) | tabs down, face up. Logo traced by `art/trace.py`. |
-| Lid | `3mf/seven-lid.3mf` (1 white, 2 grey, 3 green, 4 red) | face up: the green corners stand 0.4 mm up and print last |
+| Lid | `3mf/seven-lid.3mf` (1 white, 2 grey, 3 green, 4 red) | face up: green stands 0.4 mm up, red and grey 0.2, printed last |
 
 Build: NFC sticker in its pocket, medallion + tabs in the seat, a drop of PETG super glue on each tab, lid on top.

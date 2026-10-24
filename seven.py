@@ -24,7 +24,8 @@ FLOOR = 1.2                 # base floor
 SEAT = 0.4                  # seat depth = medallion lip + tab thickness
 POCKET = 0.2                # NFC pocket, under the seat; leaves 0.6 (3 layers) under the sticker.
                             # 1 layer there tore coming off the bed.
-RAISE, RAISE_IN = 2, 0.5     # lid's green circles stand up this many layers, each this much smaller
+# lid colors stand up above the face (it prints face up, so these are the last layers): layers, inset per layer
+RAISE = {"green": (2, 0.5), "red": (1, 0.0), "grey": (1, 0.0)}
 PIT = 0.2                   # glue pits in the floor under the lid's green circles: one layer deep
 NOTCH = 0.2                 # pry notch: the first layer left out at an edge, so a blade slips under
 NOTCH_W, NOTCH_IN = 8.0, 3.0
@@ -144,11 +145,14 @@ def lid(ow, oh, inlays):
         parts[c] = slab(cs, z1 - INLAY, z1)
         taken = taken + cs
     parts["white"] = body - slab(taken, z1 - INLAY, z1 + 1)
-    if "green" in cut:                                     # raised green: the last layers, green only
-        cs = cut["green"]
-        for k in range(RAISE):
-            cs = cs.offset(-RAISE_IN, JoinType.Round)
-            parts["green"] = parts["green"] + slab(cs, z1 + 0.2 * k, z1 + 0.2 * (k + 1))
+    for c, (layers, inset) in RAISE.items():               # raised colors: the last layers
+        if c not in parts:
+            continue
+        cs = parts[c].slice(z1 - 0.1)
+        for k in range(layers):
+            if inset:
+                cs = cs.offset(-inset, JoinType.Round)
+            parts[c] = parts[c] + slab(cs, z1 + 0.2 * k, z1 + 0.2 * (k + 1))
     return parts
 
 
