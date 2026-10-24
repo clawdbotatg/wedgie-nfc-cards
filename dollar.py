@@ -18,7 +18,7 @@ import os
 import numpy as np
 from manifold3d import CrossSection, FillRule
 
-from make import FIT, HERE, INLAY, LIP, R, SEG, SINK, H, W, circle, eth, rrect, slab, text
+from make import FIT, HERE, INLAY, LIP, OUT, OUT3, R, SEG, SINK, H, W, circle, eth, face_down, rrect, save, save_3mf, slab, text
 
 FLOOR = 0.6                 # tray floor
 POCKET = 0.2                # chip pocket in the floor (sticker is ~0.15); leaves 0.4 under it
@@ -222,7 +222,28 @@ def pack(m):
     return {"v": base64.b64encode(v.tobytes()).decode(), "i": base64.b64encode(t.tobytes()).decode()}
 
 
+def print_files(d):
+    """STLs + 3MFs for one design, each part the way it prints: tray floor down, face face down
+    (its lip recess opens up), medallion lip down and face up (iron it)."""
+    ow, oh, inlays, art, name, _ = d()
+    key = name.lower()
+    os.makedirs(OUT, exist_ok=True)
+    os.makedirs(OUT3, exist_ok=True)
+    for c, m in tray().items():
+        save(m, f"dollar-tray-{c}.stl")
+    top = FLOOR + FACE
+    f = {c: face_down(m, top) for c, m in face(ow, oh, inlays).items()}
+    for c, m in f.items():
+        save(m, f"dollar-{key}-face-{c}.stl")
+    save_3mf([(c, f[c]) for c in ("white", "grey", "green", "red") if c in f], f"dollar-{key}-face")
+    med = {c: m.translate([0, 0, -FLOOR]) for c, m in medallion(ow, oh, art).items()}
+    for c, m in med.items():
+        save(m, f"dollar-{key}-medallion-{c}.stl")
+    save_3mf([("black", med["black"])] + [(c, m) for c, m in med.items() if c != "black"], f"dollar-{key}-medallion")
+
+
 if __name__ == "__main__":
+    print_files(seals)
     data = {"dims": dict(W=W, H=H, FLOOR=FLOOR, FACE=FACE, POCKET=POCKET, BORDER=BORDER, CHIP_D=CHIP_D, LIP=LIP, SINK=SINK),
             "tray": {c: pack(m) for c, m in tray().items()}, "designs": []}
     for d in DESIGNS:
