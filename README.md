@@ -1,3 +1,57 @@
+# Dollar NFC card (the one we make)
+
+A 3D-printed card that looks like a dollar bill, with an NTAG215 NFC sticker (Ø25 mm) inside.
+Three prints per card plus a swappable medallion. 3D view: wedgie.dev/dollar/seven (`seven.html`).
+
+## Make it
+
+1. Change anything in `seven.py` (sizes at the top), then build:
+   `uv run --with manifold3d --with numpy --with fonttools python seven.py`
+   It writes the print files (`3mf/seven-*`, `stl/seven-*`) and `seven.html`.
+2. New logo for a medallion: drop the image in `art/`, trace it with
+   `uv run --with opencv-python-headless --with numpy python art/trace.py` (edit the file name and colors in it),
+   add it to `MEDALLIONS` in `seven.py`.
+3. Update the website: copy `seven.html` into `wedgie-dev/public/dollar/seven.html` with the three.js URLs
+   pointed at `/dollar/three.min.js` and `/dollar/OrbitControls.js` (the site blocks outside scripts), push wedgie-dev.
+4. Print: POST each 3MF to the print Mac inbox, `http://GriffithRobots-Mac-mini.local:8800/drop`
+   (`-F file=@… -F from=… -F notes=…`). It plans the plates.
+
+## Prints
+
+PLA, 0.2 mm layers, no supports. About 6 per plate, away from the bed's hot center and its edges.
+
+| Print | File | Colors (filament order) | Prints |
+|---|---|---|---|
+| Base | `3mf/seven-base.3mf` | 1 black | floor down |
+| Lid | `3mf/seven-lid.3mf` | 1 white, 2 grey, 3 green, 4 red | face up. Green stands 0.4 mm up, red and grey 0.2; order each layer so green is last (no extra swap) |
+| ETH medallion | `3mf/seven-medallion.3mf` | 1 black, 2 grey, 3 green | tabs down, face up. Green steps up 0.8 mm |
+| USDC medallion | `3mf/seven-medallion-usdc.3mf` | 1 black, 2 blue | tabs down, face up. Blue steps up 0.6 mm |
+| CLAWD medallion | `3mf/seven-medallion-clawd.3mf` | 1 black, 2 red, 3 white | tabs down, face up |
+
+## Build a card
+
+1. NFC sticker into the pocket in the base.
+2. Medallion over it, its tabs in the seat.
+3. A drop of PETG super glue on each tab, and in the 4 corner pits.
+4. Lid on top, inside the black border. Press.
+
+## What we learned (don't undo)
+
+- 2.0 mm total. Thinner tore: one layer under the chip ripped coming off the bed. At least 3 layers (0.6) anywhere a part peels off the bed.
+- Keep prints off the bed center (the 3MFs are placed off center). Parts stuck hard there.
+- Pry notches (first layer left out) at the base's ends and the medallion's top and bottom, to get a blade under.
+- The medallion sits in a seat in the base, so nothing floats. 1.5 mm glue room around each tab.
+- Glue pits in the base sit exactly under the lid's green circles, so glue only tints green.
+- The lid prints face up so its colors can stand up off the face.
+
+## Production run (sent 2026-10-24)
+
+10 ETH + 10 USDC cards: 20 bases, 20 lids, 10 ETH medallions, 10 USDC medallions. CLAWD medallion: file ready, count not set.
+
+---
+
+# Older work
+
 # wedgie NFC card
 
 A business-card wedgie with an NTAG215 sticker (Ø25 mm) inside. Three prints, PLA, 0.2 mm layers
@@ -40,19 +94,3 @@ Build: sticker in the back's pocket, oval piece over it, press the face into the
 Swap: push the face out through the hole in the back.
 
 Not tested: the press fit (0.05 mm gap, `PRESS` in `dollar.py`), the single-layer lip and floor under the chip.
-
-## #7 Mix ETH, with a seat (seven.py → seven.html, wedgie.dev/dollar/seven)
-
-2.0 mm. Every part has its own place. 3 layers (0.6) under the NFC sticker: 1 layer tore coming off the bed.
-Glue pits (0.2 deep) in the base exactly under the lid's green corner circles.
-Pry notches (first layer left out) at the base's ends and the medallion's top and bottom. The 3MFs sit off the bed's center.
-
-| Print | Files | Prints |
-|---|---|---|
-| Base | `3mf/seven-base.3mf` or `stl/seven-base-black.stl` | floor down |
-| ETH medallion | `3mf/seven-medallion.3mf` (1 black, 2 grey, 3 green) | tabs down, face up. The green ETH steps up 0.8 mm. |
-| USDC medallion | `3mf/seven-medallion-usdc.3mf` (1 black, 2 blue) | tabs down, face up. Blue steps up 0.6 mm. |
-| CLAWD medallion | `3mf/seven-medallion-clawd.3mf` (1 black, 2 red, 3 white) | tabs down, face up. Logo traced by `art/trace.py`. |
-| Lid | `3mf/seven-lid.3mf` (1 white, 2 grey, 3 green, 4 red) | face up: green stands 0.4 mm up, red and grey 0.2, printed last |
-
-Build: NFC sticker in its pocket, medallion + tabs in the seat, a drop of PETG super glue on each tab, lid on top.
