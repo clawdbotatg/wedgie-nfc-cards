@@ -63,10 +63,19 @@ def medallion(bw, bh, art):
     notches = sum((slab(CrossSection.square([NOTCH_W, 2 * NOTCH_IN], center=True).translate([0, sy * edge]),
                         FLOOR - SEAT - 1, FLOOR - SEAT + NOTCH) for sy in (-1, 1)), Manifold())
     parts["black"] = body - slab(taken, top - INLAY, top + 1) - notches
+    if "green" in art:                                     # stepped green above the face, smaller each layer
+        cs = art["green"] ^ oval(bw - 1.0, bh - 1.0)
+        for k in range(1, STEPS + 1):
+            cs = cs.offset(-STEP_IN, JoinType.Miter)
+            if cs.is_empty() or cs.area() < 0.3:
+                break
+            parts["green"] = parts["green"] + slab(cs, top + 0.2 * (k - 1), top + 0.2 * k)
+        print(f"green steps up to {parts['green'].bounding_box()[5] - top:.1f} mm above the face")
     return parts
 
 
 LINE = 0.6                  # grey line width of the traced ETH logo
+STEP_IN, STEPS = 0.8, 8     # the green stands up in steps: each 0.2 layer this much smaller, until it is about a point
 
 
 def eth_traced(h):
