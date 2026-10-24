@@ -4,7 +4,7 @@
 
   base       black. Floor + border. In the floor: a shallow seat shaped like the medallion's lip and two tabs,
              and under it a deeper pocket for the NFC sticker.
-  medallion  black, the ETH logo traced in grey. Lip and two side tabs drop into the seat, flush with the floor. Body comes up
+  medallion  black, the ETH logo traced in grey, green inside. Lip and two side tabs drop into the seat, flush with the floor. Body comes up
              through the lid's oval, flush with the lid.
   lid        white face, flat bottom. Sits on the floor and the tabs, inside the border.
 
@@ -58,7 +58,8 @@ LINE = 0.6                  # grey line width of the traced ETH logo
 
 def eth_traced(h):
     logo = eth(h)
-    return {"grey": logo - logo.offset(-LINE, JoinType.Miter)}
+    inside = logo.offset(-LINE, JoinType.Miter)
+    return {"grey": logo - inside, "green": inside}
 
 
 def glue():
@@ -91,7 +92,7 @@ def lid(ow, oh, inlays):
 if __name__ == "__main__":
     ow, oh, inlays, _, name, note = mix_eth()
     art = eth_traced(min(ow, oh) * 0.62)
-    note = note.replace("ETH diamond", "ETH logo traced in grey")
+    note = note.replace("ETH diamond", "ETH logo, grey outline, green inside")
     bw, bh = ow - 2 * FIT, oh - 2 * FIT
     b, m, l = base(bw, bh), medallion(bw, bh, art), lid(ow, oh, inlays)
 

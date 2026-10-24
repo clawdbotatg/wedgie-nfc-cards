@@ -48,7 +48,7 @@ Not tested: the press fit (0.05 mm gap, `PRESS` in `dollar.py`), the single-laye
 | Print | Files | Prints |
 |---|---|---|
 | Base | `stl/seven-base-black.stl` | floor down |
-| Medallion | `3mf/seven-medallion.3mf` (1 black, 2 grey) | tabs down, face up. Iron the top. |
+| Medallion | `3mf/seven-medallion.3mf` (1 black, 2 grey, 3 green) | tabs down, face up. Iron the top. |
 | Lid | `3mf/seven-lid.3mf` (1 white, 2 grey, 3 green, 4 red) | face down |
 
 Build: NFC sticker in its pocket, medallion + tabs in the seat, a drop of PETG super glue on each tab, lid on top.
