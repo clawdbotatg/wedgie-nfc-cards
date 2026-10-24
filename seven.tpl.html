@@ -154,7 +154,7 @@ const DATA = /*DATA*/null;
     b.innerHTML = (n ? `<span class="n">${n}</span>` : '') + label;
     b.addEventListener('click', () => choose(i)); picks.appendChild(b); btns.push([b, i]);
   }
-  addBtn('Both', '', -1);
+  addBtn('All', '', -1);
   DATA.designs.forEach((d, i) => addBtn(d.name, i + 1, i));
 
   // grid spots for "all": rows of 3 or 4
@@ -169,7 +169,7 @@ const DATA = /*DATA*/null;
       c.root.position.x = x; c.root.position.z = z;
     });
     if (i === -1) {
-      note.innerHTML = '<b>Both</b><p>Same base and lid, two medallions. Pick one to pull it apart.</p>';
+      note.innerHTML = '<b>All</b><p>Same base and lid, one medallion each. Pick one to pull it apart.</p>';
     } else {
       const d = DATA.designs[i];
       note.innerHTML = `<b>${d.name}</b><p>${d.note}</p><p class="mono" style="margin-top:8px;color:var(--muted)">oval ${d.oval[0]} × ${d.oval[1]} mm</p>`;

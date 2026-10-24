@@ -14,7 +14,8 @@ Writes seven.html (3D) and the print files.
 import json
 import os
 
-from manifold3d import CrossSection, JoinType, Manifold
+import numpy as np
+from manifold3d import CrossSection, FillRule, JoinType, Manifold
 
 from dollar import BORDER, CHIP_D, corners, mix_eth, oval, pack
 from make import FIT, HERE, INLAY, OUT, OUT3, H, R, W, circle, eth, rrect, save, save_3mf, slab, text
@@ -104,7 +105,13 @@ def usdc(d):
     return {"blue": arcs + dollar}
 
 
-MEDALLIONS = {"eth": lambda ow, oh: eth_traced(min(ow, oh) * 0.62), "usdc": lambda ow, oh: usdc(min(ow, oh) - 3.5)}
+def clawd(_ow, _oh):
+    """The $CLAWD logo, traced by art/trace.py: red and white on the black medallion."""
+    data = json.load(open(os.path.join(HERE, "art", "clawd.json")))
+    return {c: CrossSection([np.array(p, dtype=float) for p in ps], FillRule.EvenOdd) for c, ps in data.items()}
+
+
+MEDALLIONS = {"eth": lambda ow, oh: eth_traced(min(ow, oh) * 0.62), "usdc": lambda ow, oh: usdc(min(ow, oh) - 3.5), "clawd": clawd}
 
 
 def pit_glue():
@@ -169,7 +176,8 @@ if __name__ == "__main__":
             save(x, f"{stem}-{c}.stl")
         save_3mf([("black", mp["black"])] + [(c, x) for c, x in mp.items() if c != "black"], stem, AT["medallion"])
         label = {"eth": ("ETH", "ETH logo: grey outline, green inside, the green stepped up to a point."),
-                 "usdc": ("USDC", "USDC logo in blue on black: two arcs and a dollar sign, stepped up a little.")}[key]
+                 "usdc": ("USDC", "USDC logo in blue on black: two arcs and a dollar sign, stepped up a little."),
+                 "clawd": ("CLAWD", "The $CLAWD logo in red and white on black. Flat, no steps.")}[key]
         designs.append({"name": label[0], "note": label[1], "oval": [ow, oh],
                         "face": {c: pack(x) for c, x in l.items()},
                         "medallion": {c: pack(x) for c, x in dict(m, **glue()).items()}})
