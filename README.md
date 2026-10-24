@@ -1,7 +1,7 @@
 # Dollar NFC card (the one we make)
 
 A 3D-printed card that looks like a dollar bill, with an NTAG215 NFC sticker (Ø25 mm) inside.
-Three prints per card plus a swappable medallion. 3D view: wedgie.dev/dollar/seven (`seven.html`).
+Three prints per card: base, medallion (the swappable logo), lid. 3D view: wedgie.dev/dollar/seven (`seven.html`).
 
 ## Make it
 
