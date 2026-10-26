@@ -93,11 +93,12 @@ def medallion(bw, bh, art):
 LINE = 0.6                  # grey line width of the traced ETH logo
 # logo colors stacked on top of the black face, in 0.2 layers: (start above the face, layers, inset per layer).
 # Each color sits fully above the one before, so a medallion prints all black, then each color once:
-# ETH = 2 filament changes, USDC = 1 (Austin, 10-26: few changes, colors stick up).
+# ETH and CLAWD = 2 filament changes, USDC = 1 (Austin, 10-26: few changes, colors stick up).
 # ETH: 2 layers of grey (the whole logo), then green inside it, shrinking to a point; the grey shows as the outline.
 # Blue goes straight up: its strokes are only 1.9 mm wide, any real inset eats them in 2 layers.
-RISE = {"grey": (0, 2, 0), "green": (0.4, 8, 0.8), "blue": (0, 6, 0.05)}
-DEEP = {"grey": 0, "green": 0, "blue": 0}   # color depth into the face: 0 = sits on top. Others inlay INLAY deep.
+# CLAWD: 4 layers of white (the whole logo; 2 over black looks grey), then 2 of red on top. Black lines stay at the face.
+RISE = {"grey": (0, 2, 0), "green": (0.4, 8, 0.8), "blue": (0, 6, 0.05), "white": (0, 4, 0), "red": (0.8, 2, 0)}
+DEEP = {"grey": 0, "green": 0, "blue": 0, "white": 0, "red": 0}   # color depth into the face: 0 = sits on top. Others inlay INLAY deep.
 
 
 def eth_traced(h):
@@ -119,7 +120,8 @@ def usdc(d):
 def clawd(_ow, _oh):
     """The $CLAWD logo, traced by art/trace.py: red and white on the black medallion."""
     data = json.load(open(os.path.join(HERE, "art", "clawd.json")))
-    return {c: CrossSection([np.array(p, dtype=float) for p in ps], FillRule.EvenOdd) for c, ps in data.items()}
+    art = {c: CrossSection([np.array(p, dtype=float) for p in ps], FillRule.EvenOdd) for c, ps in data.items()}
+    return {"white": art["white"] + art["red"], "red": art["red"]}      # white under the red too, to hold it up
 
 
 MEDALLIONS = {"eth": lambda ow, oh: eth_traced(min(ow, oh) * 0.62), "usdc": lambda ow, oh: usdc(min(ow, oh) - 3.5), "clawd": clawd}
@@ -194,7 +196,7 @@ if __name__ == "__main__":
         save_3mf([("black", mp["black"])] + [(c, x) for c, x in mp.items() if c != "black"], stem, AT["medallion"])
         label = {"eth": ("ETH", "ETH logo on top of the black: grey, then green stepped up to a point."),
                  "usdc": ("USDC", "USDC logo in blue on black: two arcs and a dollar sign, sitting 1.2 mm up on the black (one color change)."),
-                 "clawd": ("CLAWD", "The $CLAWD logo in red and white on black. Flat, no steps.")}[key]
+                 "clawd": ("CLAWD", "The $CLAWD logo on top of the black: white, then red on the white.")}[key]
         designs.append({"name": label[0], "note": label[1], "oval": [ow, oh],
                         "face": {c: pack(x) for c, x in l.items()},
                         "medallion": {c: pack(x) for c, x in dict(m, **glue()).items()}})
