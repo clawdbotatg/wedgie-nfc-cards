@@ -26,8 +26,7 @@ PLA, 0.2 mm layers, no supports. About 6 per plate, away from the bed's hot cent
 | Lid | `3mf/seven-lid.3mf` | 1 white, 2 grey, 3 green, 4 red | face down. Flat face |
 | ETH medallion | `3mf/seven-medallion.3mf` | 1 black, 2 grey, 3 green | tabs down, face up. On top of the black: grey 0.4 mm, then green steps up 1.0 mm more. 2 color changes |
 | USDC medallion | `3mf/seven-medallion-usdc.3mf` | 1 black, 2 blue | tabs down, face up. Blue sits on top of the black, 1.2 mm tall: one color change |
-| CLAWD medallion | `3mf/seven-medallion-clawd.3mf` | 1 black, 2 red, 3 white | tabs down, face up |
-| CLAWD stacked (test) | `3mf/seven-medallion-clawd-stacked.3mf` | 1 black, 2 white, 3 red | tabs down, face up. White 0.8 mm on the black, red 0.4 mm on it, white tucked 0.4 mm under the red. 2 color changes |
+| CLAWD medallion | `3mf/seven-medallion-clawd.3mf` | 1 black, 2 white, 3 red | tabs down, face up. White 0.8 mm on the black, red 0.4 mm on it. 2 color changes |
 
 ## Build a card
 
@@ -43,6 +42,8 @@ PLA, 0.2 mm layers, no supports. About 6 per plate, away from the bed's hot cent
 - Pry notches (first layer left out) at the base's ends and the medallion's top and bottom, to get a blade under.
 - The medallion sits in a seat in the base, so nothing floats. 1.5 mm glue room around each tab.
 - Glue pits in the base sit exactly under the lid's green circles, so glue only tints green.
+- Medallion colors sit on top of the black, never set into it. Set-in colors came out dull and smeared with black;
+  stacked came out bright, with fewer color changes. Light colors need 4 layers or black shows through.
 - The lid prints face down, flat. Raised colors (face up) looked worse: uneven. `RAISE` in `seven.py` brings them back.
 
 ## Production run (sent 2026-10-24)

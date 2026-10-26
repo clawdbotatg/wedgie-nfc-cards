@@ -99,7 +99,8 @@ LINE = 0.6                  # grey line width of the traced ETH logo
 # Blue goes straight up: its strokes are only 1.9 mm wide, any real inset eats them in 2 layers.
 RISE = {"grey": (0, 2, 0), "green": (0.4, 8, 0.8), "blue": (0, 6, 0.05)}
 DEEP = {"grey": 0, "green": 0, "blue": 0}   # color depth into the face: 0 = sits on top. Others inlay INLAY deep.
-# CLAWD stacked (test vs flat, 10-26): 4 layers of white (2 over black looks grey), 2 of red on top.
+# CLAWD stacked: 4 layers of white (2 over black looks grey), 2 of red on top. Test print 10-26: the flat
+# (inlaid) one came out dull and smeared with black, the stacked one bright. Don't inlay colors on medallions.
 # The white under the red is pulled in TUCK so the red hangs over it and hides it.
 TUCK = 0.4
 STACKED = ({"white": (0, 4, 0), "red": (0.8, 2, 0)}, {"white": 0, "red": 0})
@@ -136,9 +137,9 @@ def clawd_stacked(ow, oh):
     return {"white": art["white"] + under, "red": art["red"]}
 
 
-MEDALLIONS = {"eth": lambda ow, oh: eth_traced(min(ow, oh) * 0.62), "usdc": lambda ow, oh: usdc(min(ow, oh) - 3.5), "clawd": clawd,
-              "clawd-stacked": clawd_stacked}
-STYLE = {"clawd-stacked": STACKED}          # (rise, deep) for medallions that don't use RISE / DEEP
+MEDALLIONS = {"eth": lambda ow, oh: eth_traced(min(ow, oh) * 0.62), "usdc": lambda ow, oh: usdc(min(ow, oh) - 3.5),
+              "clawd": clawd_stacked}
+STYLE = {"clawd": STACKED}          # (rise, deep) for medallions that don't use RISE / DEEP
 
 
 def pit_glue():
@@ -210,8 +211,7 @@ if __name__ == "__main__":
         save_3mf([("black", mp["black"])] + [(c, x) for c, x in mp.items() if c != "black"], stem, AT["medallion"])
         label = {"eth": ("ETH", "ETH logo on top of the black: grey, then green stepped up to a point."),
                  "usdc": ("USDC", "USDC logo in blue on black: two arcs and a dollar sign, sitting 1.2 mm up on the black (one color change)."),
-                 "clawd": ("CLAWD", "The $CLAWD logo in red and white on black. Flat, no steps."),
-                 "clawd-stacked": ("CLAWD up", "$CLAWD stacked on the black: white, then red on top. The white under the red is tucked in.")}[key]
+                 "clawd": ("CLAWD", "$CLAWD stacked on the black: white, then red on top. The white under the red is tucked in.")}[key]
         designs.append({"name": label[0], "note": label[1], "oval": [ow, oh],
                         "face": {c: pack(x) for c, x in l.items()},
                         "medallion": {c: pack(x) for c, x in dict(m, **glue()).items()}})
