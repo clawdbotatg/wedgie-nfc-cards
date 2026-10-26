@@ -75,32 +75,35 @@ def medallion(bw, bh, art):
     notches = sum((slab(CrossSection.square([NOTCH_W, 2 * NOTCH_IN], center=True).translate([0, sy * edge]),
                         FLOOR - SEAT - 1, FLOOR - SEAT + NOTCH) for sy in (-1, 1)), Manifold())
     parts["black"] = body - taken - notches
-    for c, (steps, step_in) in RISE.items():               # color standing up above the face, smaller each layer
+    for c, (start, steps, step_in) in RISE.items():        # color standing up above the face, smaller each layer
         if c not in art:
             continue
         cs = art[c] ^ oval(bw - 1.0, bh - 1.0)
-        for k in range(1, steps + 1):
-            cs = cs.offset(-step_in, JoinType.Miter)
+        for k in range(steps):
+            if k:
+                cs = cs.offset(-step_in, JoinType.Miter)
             if cs.is_empty() or cs.area() < 0.3:
                 break
-            parts[c] = parts[c] + slab(cs, top + 0.2 * (k - 1), top + 0.2 * k)
-        print(f"{c} steps up to {parts[c].bounding_box()[5] - top:.1f} mm above the face")
+            z = top + start + 0.2 * k
+            parts[c] = parts[c] + slab(cs, z, z + 0.2)
+        print(f"{c} {start:.1f} to {parts[c].bounding_box()[5] - top:.1f} mm above the face")
     return parts
 
 
 LINE = 0.6                  # grey line width of the traced ETH logo
-# logo color standing up above the face in 0.2 steps: (layers, inset per layer).
-# Green shrinks to a point. Blue goes straight up: its strokes are only 1.9 mm wide,
-# any real inset ate them in 2 layers (Austin, 10-26: wants the blue to stick out, bright).
-RISE = {"green": (8, 0.8), "blue": (6, 0.05)}
-DEEP = {"blue": 0}          # color depth into the face. Blue 0: it sits on the black face, so the print is
-                            # all black, then all blue: one filament change (Austin, 10-26)
+# logo colors stacked on top of the black face, in 0.2 layers: (start above the face, layers, inset per layer).
+# Each color sits fully above the one before, so a medallion prints all black, then each color once:
+# ETH = 2 filament changes, USDC = 1 (Austin, 10-26: few changes, colors stick up).
+# ETH: 2 layers of grey (the whole logo), then green inside it, shrinking to a point; the grey shows as the outline.
+# Blue goes straight up: its strokes are only 1.9 mm wide, any real inset eats them in 2 layers.
+RISE = {"grey": (0, 2, 0), "green": (0.4, 8, 0.8), "blue": (0, 6, 0.05)}
+DEEP = {"grey": 0, "green": 0, "blue": 0}   # color depth into the face: 0 = sits on top. Others inlay INLAY deep.
 
 
 def eth_traced(h):
     logo = eth(h)
     inside = logo.offset(-LINE, JoinType.Miter)
-    return {"grey": logo - inside, "green": inside}
+    return {"grey": logo, "green": inside}         # grey under the green too, to hold it up
 
 
 def usdc(d):
@@ -189,7 +192,7 @@ if __name__ == "__main__":
         for c, x in mp.items():
             save(x, f"{stem}-{c}.stl")
         save_3mf([("black", mp["black"])] + [(c, x) for c, x in mp.items() if c != "black"], stem, AT["medallion"])
-        label = {"eth": ("ETH", "ETH logo: grey outline, green inside, the green stepped up to a point."),
+        label = {"eth": ("ETH", "ETH logo on top of the black: grey, then green stepped up to a point."),
                  "usdc": ("USDC", "USDC logo in blue on black: two arcs and a dollar sign, sitting 1.2 mm up on the black (one color change)."),
                  "clawd": ("CLAWD", "The $CLAWD logo in red and white on black. Flat, no steps.")}[key]
         designs.append({"name": label[0], "note": label[1], "oval": [ow, oh],
