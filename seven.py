@@ -61,13 +61,14 @@ def base(bw, bh, pits=None):
     return {"black": out}
 
 
-def medallion(bw, bh, art):
+def medallion(bw, bh, art, rise=None, deep=None):
+    rise, deep = rise or RISE, deep or DEEP
     top = FLOOR + LID
     body = slab(medallion_outline(bw, bh), FLOOR - SEAT, FLOOR) + slab(oval(bw, bh), FLOOR - SEAT, top)
     parts, taken = {}, Manifold()
     for c, cs in art.items():
         cs = cs ^ oval(bw - 1.0, bh - 1.0)
-        d = DEEP.get(c, INLAY)
+        d = deep.get(c, INLAY)
         parts[c] = slab(cs, top - d, top) if d else Manifold()
         if d:
             taken = taken + slab(cs, top - d, top + 1)
@@ -75,7 +76,7 @@ def medallion(bw, bh, art):
     notches = sum((slab(CrossSection.square([NOTCH_W, 2 * NOTCH_IN], center=True).translate([0, sy * edge]),
                         FLOOR - SEAT - 1, FLOOR - SEAT + NOTCH) for sy in (-1, 1)), Manifold())
     parts["black"] = body - taken - notches
-    for c, (start, steps, step_in) in RISE.items():        # color standing up above the face, smaller each layer
+    for c, (start, steps, step_in) in rise.items():        # color standing up above the face, smaller each layer
         if c not in art:
             continue
         cs = art[c] ^ oval(bw - 1.0, bh - 1.0)
@@ -98,6 +99,10 @@ LINE = 0.6                  # grey line width of the traced ETH logo
 # Blue goes straight up: its strokes are only 1.9 mm wide, any real inset eats them in 2 layers.
 RISE = {"grey": (0, 2, 0), "green": (0.4, 8, 0.8), "blue": (0, 6, 0.05)}
 DEEP = {"grey": 0, "green": 0, "blue": 0}   # color depth into the face: 0 = sits on top. Others inlay INLAY deep.
+# CLAWD stacked (test vs flat, 10-26): 4 layers of white (2 over black looks grey), 2 of red on top.
+# The white under the red is pulled in TUCK so the red hangs over it and hides it.
+TUCK = 0.4
+STACKED = ({"white": (0, 4, 0), "red": (0.8, 2, 0)}, {"white": 0, "red": 0})
 
 
 def eth_traced(h):
@@ -122,7 +127,18 @@ def clawd(_ow, _oh):
     return {c: CrossSection([np.array(p, dtype=float) for p in ps], FillRule.EvenOdd) for c, ps in data.items()}
 
 
-MEDALLIONS = {"eth": lambda ow, oh: eth_traced(min(ow, oh) * 0.62), "usdc": lambda ow, oh: usdc(min(ow, oh) - 3.5), "clawd": clawd}
+def clawd_stacked(ow, oh):
+    art = clawd(ow, oh)
+    under = CrossSection()
+    for piece in art["red"].decompose():                  # thin red bits keep full white under them, or they'd float
+        tucked = piece.offset(-TUCK, JoinType.Round)
+        under = under + (tucked if tucked.area() > 0.5 * piece.area() else piece)
+    return {"white": art["white"] + under, "red": art["red"]}
+
+
+MEDALLIONS = {"eth": lambda ow, oh: eth_traced(min(ow, oh) * 0.62), "usdc": lambda ow, oh: usdc(min(ow, oh) - 3.5), "clawd": clawd,
+              "clawd-stacked": clawd_stacked}
+STYLE = {"clawd-stacked": STACKED}          # (rise, deep) for medallions that don't use RISE / DEEP
 
 
 def pit_glue():
@@ -186,7 +202,7 @@ if __name__ == "__main__":
 
     designs = []
     for key, art in MEDALLIONS.items():
-        m = medallion(bw, bh, art(ow, oh))
+        m = medallion(bw, bh, art(ow, oh), *STYLE.get(key, ()))
         stem = "seven-medallion" if key == "eth" else f"seven-medallion-{key}"
         mp = {c: x.translate([0, 0, -(FLOOR - SEAT)]) for c, x in m.items()}   # lip down, face up
         for c, x in mp.items():
@@ -194,7 +210,8 @@ if __name__ == "__main__":
         save_3mf([("black", mp["black"])] + [(c, x) for c, x in mp.items() if c != "black"], stem, AT["medallion"])
         label = {"eth": ("ETH", "ETH logo on top of the black: grey, then green stepped up to a point."),
                  "usdc": ("USDC", "USDC logo in blue on black: two arcs and a dollar sign, sitting 1.2 mm up on the black (one color change)."),
-                 "clawd": ("CLAWD", "The $CLAWD logo in red and white on black. Flat, no steps.")}[key]
+                 "clawd": ("CLAWD", "The $CLAWD logo in red and white on black. Flat, no steps."),
+                 "clawd-stacked": ("CLAWD up", "$CLAWD stacked on the black: white, then red on top. The white under the red is tucked in.")}[key]
         designs.append({"name": label[0], "note": label[1], "oval": [ow, oh],
                         "face": {c: pack(x) for c, x in l.items()},
                         "medallion": {c: pack(x) for c, x in dict(m, **glue()).items()}})
