@@ -25,7 +25,7 @@ PLA, 0.2 mm layers, no supports. About 6 per plate, away from the bed's hot cent
 | Base | `3mf/seven-base.3mf` | 1 black | floor down |
 | Lid | `3mf/seven-lid.3mf` | 1 white, 2 grey, 3 green, 4 red | face down. Flat face |
 | ETH medallion | `3mf/seven-medallion.3mf` | 1 black, 2 grey, 3 green | tabs down, face up. Green steps up 0.8 mm |
-| USDC medallion | `3mf/seven-medallion-usdc.3mf` | 1 black, 2 blue | tabs down, face up. Blue goes 0.8 mm deep and stands 1.2 mm up, straight sides |
+| USDC medallion | `3mf/seven-medallion-usdc.3mf` | 1 black, 2 blue | tabs down, face up. Blue sits on top of the black, 1.2 mm tall: one color change |
 | CLAWD medallion | `3mf/seven-medallion-clawd.3mf` | 1 black, 2 red, 3 white | tabs down, face up |
 
 ## Build a card

@@ -67,8 +67,10 @@ def medallion(bw, bh, art):
     parts, taken = {}, Manifold()
     for c, cs in art.items():
         cs = cs ^ oval(bw - 1.0, bh - 1.0)
-        parts[c] = slab(cs, top - DEEP.get(c, INLAY), top)
-        taken = taken + slab(cs, top - DEEP.get(c, INLAY), top + 1)
+        d = DEEP.get(c, INLAY)
+        parts[c] = slab(cs, top - d, top) if d else Manifold()
+        if d:
+            taken = taken + slab(cs, top - d, top + 1)
     edge = bh / 2 + LIP_W                                   # pry notches at the oval's top and bottom
     notches = sum((slab(CrossSection.square([NOTCH_W, 2 * NOTCH_IN], center=True).translate([0, sy * edge]),
                         FLOOR - SEAT - 1, FLOOR - SEAT + NOTCH) for sy in (-1, 1)), Manifold())
@@ -91,7 +93,8 @@ LINE = 0.6                  # grey line width of the traced ETH logo
 # Green shrinks to a point. Blue goes straight up: its strokes are only 1.9 mm wide,
 # any real inset ate them in 2 layers (Austin, 10-26: wants the blue to stick out, bright).
 RISE = {"green": (8, 0.8), "blue": (6, 0.05)}
-DEEP = {"blue": 0.8}        # color depth into the face; deeper blue so black doesn't show through it
+DEEP = {"blue": 0}          # color depth into the face. Blue 0: it sits on the black face, so the print is
+                            # all black, then all blue: one filament change (Austin, 10-26)
 
 
 def eth_traced(h):
@@ -187,7 +190,7 @@ if __name__ == "__main__":
             save(x, f"{stem}-{c}.stl")
         save_3mf([("black", mp["black"])] + [(c, x) for c, x in mp.items() if c != "black"], stem, AT["medallion"])
         label = {"eth": ("ETH", "ETH logo: grey outline, green inside, the green stepped up to a point."),
-                 "usdc": ("USDC", "USDC logo in blue on black: two arcs and a dollar sign, standing 1.2 mm up."),
+                 "usdc": ("USDC", "USDC logo in blue on black: two arcs and a dollar sign, sitting 1.2 mm up on the black (one color change)."),
                  "clawd": ("CLAWD", "The $CLAWD logo in red and white on black. Flat, no steps.")}[key]
         designs.append({"name": label[0], "note": label[1], "oval": [ow, oh],
                         "face": {c: pack(x) for c, x in l.items()},
