@@ -76,12 +76,13 @@ def medallion(bw, bh, art, rise=None, deep=None):
     notches = sum((slab(CrossSection.square([NOTCH_W, 2 * NOTCH_IN], center=True).translate([0, sy * edge]),
                         FLOOR - SEAT - 1, FLOOR - SEAT + NOTCH) for sy in (-1, 1)), Manifold())
     parts["black"] = body - taken - notches
-    for c, (start, steps, step_in) in rise.items():        # color standing up above the face, smaller each layer
+    for c, (start, steps, step_in, *flat) in rise.items():  # color standing up above the face, smaller each layer
         if c not in art:
             continue
+        flat = flat[0] if flat else 1                       # layers at full size before it starts stepping in
         cs = art[c] ^ oval(bw - 1.0, bh - 1.0)
         for k in range(steps):
-            if k:
+            if k >= flat:
                 cs = cs.offset(-step_in, JoinType.Miter)
             if cs.is_empty() or cs.area() < 0.3:
                 break
@@ -95,9 +96,11 @@ LINE = 0.6                  # grey line width of the traced ETH logo
 # logo colors stacked on top of the black face, in 0.2 layers: (start above the face, layers, inset per layer).
 # Each color sits fully above the one before, so a medallion prints all black, then each color once:
 # ETH = 2 filament changes, USDC = 1 (Austin, 10-26: few changes, colors stick up).
-# ETH: 2 layers of grey (the whole logo), then green inside it, shrinking to a point; the grey shows as the outline.
+# ETH: 2 layers of grey (the whole logo), then green inside it: 4 layers straight up (as tall as the USDC blue),
+# then 3 layers stepping in 0.4. The grey shows as the outline. (10-27: was 18.6 mm, stepping 0.8 from the first
+# layer; it looked small and thin next to USDC.)
 # Blue goes straight up: its strokes are only 1.9 mm wide, any real inset eats them in 2 layers.
-RISE = {"grey": (0, 2, 0), "green": (0.4, 8, 0.8), "blue": (0, 6, 0.05)}
+RISE = {"grey": (0, 2, 0), "green": (0.4, 7, 0.4, 4), "blue": (0, 6, 0.05)}
 DEEP = {"grey": 0, "green": 0, "blue": 0}   # color depth into the face: 0 = sits on top. Others inlay INLAY deep.
 # CLAWD stacked: 4 layers of white (2 over black looks grey), 2 of red on top. Test print 10-26: the flat
 # (inlaid) one came out dull and smeared with black, the stacked one bright. Don't inlay colors on medallions.
@@ -137,7 +140,7 @@ def clawd_stacked(ow, oh):
     return {"white": art["white"] + under, "red": art["red"]}
 
 
-MEDALLIONS = {"eth": lambda ow, oh: eth_traced(min(ow, oh) * 0.62), "usdc": lambda ow, oh: usdc(min(ow, oh) - 3.5),
+MEDALLIONS = {"eth": lambda ow, oh: eth_traced(oh * 0.82), "usdc": lambda ow, oh: usdc(min(ow, oh) - 3.5),
               "clawd": clawd_stacked}
 STYLE = {"clawd": STACKED}          # (rise, deep) for medallions that don't use RISE / DEEP
 
